@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ForecaNow</string>
+    <string name="title_activity_welcome_screen">WelcomeScreen</string>
+    <string name="title_activity_home_screen">HomeScreen</string>
+    <string name="title_activity_favourite_screen">FavouriteScreen</string>
+    <string name="title_activity_alarm_screen">AlarmScreen</string>
+    <string name="title_activity_setting_screen">SettingScreen</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_favorite_screen">FavoriteScreen</string>
+</resources>
