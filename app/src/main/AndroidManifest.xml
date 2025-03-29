@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ForecaNow"
-        tools:targetApi="31">
+        tools:targetApi="31"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".setting.SettingScreen"
             android:exported="false"
@@ -21,7 +29,8 @@
             android:name=".home.HomeScreen"
             android:exported="false"
             android:label="@string/title_activity_home_screen"
-            android:theme="@style/Theme.ForecaNow" />
+            android:theme="@style/Theme.ForecaNow" >
+        </activity>
         <activity
             android:name=".favorite.FavoriteScreen"
             android:exported="false"
@@ -29,24 +38,27 @@
             android:theme="@style/Theme.ForecaNow" />
         <activity
             android:name=".alarm.AlarmScreen"
-            android:exported="false"
-            android:label="@string/title_activity_alarm_screen"
-            android:theme="@style/Theme.ForecaNow" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
-            android:label="@string/title_activity_main"
-            android:theme="@style/Theme.ForecaNow" />
-        <activity
-            android:name=".WelcomeScreen"
             android:exported="true"
-            android:label="@string/title_activity_welcome_screen"
-            android:theme="@style/Theme.ForecaNow">
+            android:label="@string/title_activity_alarm_screen"
+            android:theme="@style/Theme.ForecaNow" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/title_activity_main"
+            android:theme="@style/Theme.ForecaNow" >
+        </activity>
+        <activity
+            android:name=".WelcomeScreen"
+            android:exported="false"
+            android:label="@string/title_activity_welcome_screen"
+            android:theme="@style/Theme.ForecaNow">
+
         </activity>
     </application>
 

@@ -54,7 +54,7 @@ fun NavigationDrawerApp() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val menuItems = listOf("Home", "Favorite", "Alarm", "Setting")
-    var selectedItem by remember { mutableStateOf(menuItems[0]) }
+    var selectedItem by remember { mutableStateOf("Home") }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -66,7 +66,11 @@ fun NavigationDrawerApp() {
                         selected = selectedItem == item,
                         onClick = {
                             selectedItem = item
-                            navController.navigate(item)
+                            navController.navigate(item) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                             scope.launch { drawerState.close() }
                         },
                         modifier = Modifier.padding(8.dp)

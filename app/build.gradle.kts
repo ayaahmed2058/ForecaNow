@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -57,8 +58,38 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    //retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+
+
+    //location
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+
+
     val nav_version = "2.8.8"
     implementation("androidx.navigation:navigation-compose:$nav_version")
     //Serialization for NavArgs
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+
+
+
+    //Room
+    implementation ("androidx.room:room-ktx:2.6.1")
+    implementation ("androidx.room:room-runtime:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+
+    //ViewModel & livedata
+    implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
+
+    val compose_version = "1.0.0"
+    implementation ("androidx.compose.runtime:runtime-livedata:$compose_version")
+    //Scoped API
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.7")
+
+
 }
