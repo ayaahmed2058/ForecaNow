@@ -40,6 +40,7 @@ import com.google.android.gms.location.LocationServices
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class HomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +56,11 @@ class HomeScreen : ComponentActivity() {
 
             val viewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
 
+            val currentLocationHelper = remember { locationHelper }
+            val currentViewModel = remember { viewModel }
+
             LaunchedEffect(Unit) {
-                fetchLocationAndWeather(locationHelper, viewModel)
+                fetchLocationAndWeather(currentLocationHelper, currentViewModel)
             }
 
             HomeScreen(viewModel)
@@ -240,7 +244,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
 @Composable
 fun ForecastItem(viewModel: HomeViewModel) {
 
-    val forecastState by viewModel.forecast.observeAsState()
+    val forecastState by viewModel.forecast.collectAsState()
 
     when (forecastState) {
         is ForecastResultResponse.forecastSuccess -> {
@@ -301,7 +305,7 @@ fun ForecastItem(viewModel: HomeViewModel) {
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ForecastFiveDays(viewModel: HomeViewModel) {
-    val forecastState by viewModel.forecast.observeAsState()
+    val forecastState by viewModel.forecast.collectAsState()
 
     when (forecastState) {
         is ForecastResultResponse.forecastSuccess -> {
@@ -383,12 +387,17 @@ fun WeatherDetailItem(label: String, value: String) {
 
 
 fun formatTime(timestamp: Long): String {
-    return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(timestamp * 1000))
-}
-fun formatDate(timestamp: Long): String {
-    val sdf = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
+    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    sdf.timeZone = TimeZone.getDefault()
     return sdf.format(Date(timestamp * 1000))
 }
+
+fun formatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
+    sdf.timeZone = TimeZone.getDefault()
+    return sdf.format(Date(timestamp * 1000))
+}
+
 
 fun extractDailyForecast(hourlyList: List<HourlyWeather>): List<HourlyWeather> {
     val dailyMap = mutableMapOf<String, HourlyWeather>()

@@ -24,11 +24,33 @@ class HomeViewModel (private val repository: RepositoryInterface) : ViewModel() 
     private val mutableWeather =  MutableStateFlow<Response>(Response.Loading)
     val weather = mutableWeather.asStateFlow()
 
-    private val mutableForecast: MutableLiveData<ForecastResultResponse> = MutableLiveData()
-    val forecast: LiveData<ForecastResultResponse> = mutableForecast
+//    private val mutableForecast: MutableLiveData<ForecastResultResponse> = MutableLiveData()
+//    val forecast: LiveData<ForecastResultResponse> = mutableForecast
 
     private val mutableMessage =  MutableSharedFlow<String>()
     val message= mutableMessage.asSharedFlow()
+
+    private val mutableForecast = MutableStateFlow<ForecastResultResponse>(ForecastResultResponse.Loading)
+    val forecast = mutableForecast.asStateFlow()
+
+    fun getHourlyForecast(lat: Double, lon: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.getHourlyForecast(lat, lon)
+                    .catch { ex ->
+                        mutableForecast.value = ForecastResultResponse.Failure(ex)
+                        mutableMessage.emit("Error From API: ${ex.message}")
+                    }
+                    .collect { result ->
+                        mutableForecast.value = ForecastResultResponse.forecastSuccess(result)
+                    }
+            } catch (e: Exception) {
+                mutableForecast.value = ForecastResultResponse.Failure(e)
+                mutableMessage.emit("an error occurred ${e.message}")
+            }
+        }
+    }
+
 
 
     fun getCurrentWeather(lat: Double, lon: Double) {
@@ -53,27 +75,27 @@ class HomeViewModel (private val repository: RepositoryInterface) : ViewModel() 
         }
     }
 
-    fun getHourlyForecast(lat: Double, lon: Double) {
-
-        viewModelScope.launch(Dispatchers.IO) {
-
-            try {
-                val forecastResponse = repository.getHourlyForecast(lat, lon)
-                forecastResponse
-                    .catch { ex ->
-                        mutableForecast.postValue(ForecastResultResponse.Failure(ex))
-                        mutableMessage.emit("Error From API: ${ex.message}")
-                    }
-                    .collect {
-                        mutableForecast.postValue(ForecastResultResponse.forecastSuccess(it))
-                    }
-
-            } catch (e: Exception) {
-                mutableForecast.value = ForecastResultResponse.Failure(e)
-                mutableMessage.emit("an error occurs ${e.message}")
-            }
-        }
-    }
+//    fun getHourlyForecast(lat: Double, lon: Double) {
+//
+//        viewModelScope.launch(Dispatchers.IO) {
+//
+//            try {
+//                val forecastResponse = repository.getHourlyForecast(lat, lon)
+//                forecastResponse
+//                    .catch { ex ->
+//                        mutableForecast.postValue(ForecastResultResponse.Failure(ex))
+//                        mutableMessage.emit("Error From API: ${ex.message}")
+//                    }
+//                    .collect {
+//                        mutableForecast.postValue(ForecastResultResponse.forecastSuccess(it))
+//                    }
+//
+//            } catch (e: Exception) {
+//                mutableForecast.value = ForecastResultResponse.Failure(e)
+//                mutableMessage.emit("an error occurs ${e.message}")
+//            }
+//        }
+//    }
 
 
 }
