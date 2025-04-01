@@ -6,6 +6,7 @@ import com.example.forecanow.db.WeatherLocalDataSourceInterface
 import com.example.forecanow.network.WeatherRemoteDataSourceInterface
 import com.example.forecanow.pojo.ForecastResponse
 import com.example.forecanow.pojo.WeatherResponse
+import com.example.forecanow.setting.AppSettings
 import kotlinx.coroutines.flow.Flow
 
 class RepositoryImp private constructor(
@@ -13,16 +14,17 @@ class RepositoryImp private constructor(
     private val weatherLocalDataSource: WeatherLocalDataSourceInterface
 ) : RepositoryInterface{
 
-    override suspend fun getWeather(lat: Double, lon: Double): Flow<WeatherResponse> {
+    override suspend fun getWeather(lat: Double, lon: Double , units: String): Flow<WeatherResponse> {
 
-        return weatherRemoteDataSource.getCurrentWeather(lat,lon)
+        return weatherRemoteDataSource.getCurrentWeather(lat,lon,units)
     }
 
     override suspend fun getHourlyForecast(
         lat: Double,
-        lon: Double
+        lon: Double,
+        units: String
     ): Flow<ForecastResponse> {
-        return weatherRemoteDataSource.getHourlyForecast(lat , lon)
+        return weatherRemoteDataSource.getHourlyForecast(lat , lon,units)
     }
 
     override suspend fun getAllAlerts(): Flow<List<WeatherAlert>> {
@@ -51,6 +53,16 @@ class RepositoryImp private constructor(
 
     override suspend fun getFavoriteById(id: Int): FavoriteLocation? {
         return weatherLocalDataSource.getFavoriteById(id)
+    }
+
+    override suspend fun saveSettings(settings: AppSettings) {
+
+        weatherLocalDataSource.saveSettings(settings)
+    }
+
+    override suspend fun getSettings(): AppSettings? {
+
+        return weatherLocalDataSource.getSettings()
     }
 
 

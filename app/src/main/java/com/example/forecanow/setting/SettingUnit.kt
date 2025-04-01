@@ -1,0 +1,25 @@
+package com.example.forecanow.setting
+
+
+data class AppSettings(
+    val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
+    val windSpeedUnit: WindSpeedUnit = WindSpeedUnit.METERS_PER_SECOND,
+    val language: AppLanguage = AppLanguage.ENGLISH,
+    val locationSource: LocationSource = LocationSource.GPS
+)
+
+enum class TemperatureUnit {
+    KELVIN, CELSIUS, FAHRENHEIT
+}
+
+enum class WindSpeedUnit {
+    METERS_PER_SECOND, MILES_PER_HOUR
+}
+
+enum class AppLanguage {
+    ENGLISH, ARABIC
+}
+
+enum class LocationSource {
+    GPS, MAP
+}

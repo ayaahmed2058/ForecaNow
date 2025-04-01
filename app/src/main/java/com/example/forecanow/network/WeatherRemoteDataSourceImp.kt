@@ -11,10 +11,11 @@ class WeatherRemoteDataSourceImp(private val service: WeatherApiService): Weathe
 
     override suspend fun getCurrentWeather(
         lat: Double,
-        lon: Double
+        lon: Double,
+        units: String
     ): Flow<WeatherResponse> {
 
-        val response = service.getCurrentWeather(lat, lon)
+        val response = service.getCurrentWeather(lat, lon,units)
         val body = response.body()
 
         return if (response.isSuccessful && body != null) {
@@ -27,15 +28,23 @@ class WeatherRemoteDataSourceImp(private val service: WeatherApiService): Weathe
 
     override suspend fun getHourlyForecast(
         lat: Double,
-        lon: Double
+        lon: Double,
+        units: String
     ): Flow<ForecastResponse> {
-        val response = service.getHourlyForecast(lat, lon)
-        val body = response.body()
+        try {
+            val response = service.getHourlyForecast(lat, lon, units)
+            println("API Key: ${service.getHourlyForecast(lat, lon, units, "YOUR_API_KEY")}")
+            val body = response.body()
+            println("Response Body: $body")
 
-        return if (response.isSuccessful && body != null) {
-            flowOf(body)
-        } else {
-            flow { throw Exception("Error fetching Hourly weather: ${response.message()}") }
+            return if (response.isSuccessful && body != null) {
+                flowOf(body)
+            } else {
+                flow { throw Exception("Error: ${response.code()} - ${response.message()}") }
+            }
+        } catch (e: Exception) {
+            println("Network Error: ${e.message}")
+            throw e
         }
     }
 }

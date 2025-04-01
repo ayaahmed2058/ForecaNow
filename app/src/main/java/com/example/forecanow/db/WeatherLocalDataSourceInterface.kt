@@ -2,6 +2,7 @@ package com.example.forecanow.db
 
 
 import com.example.forecanow.alarm.model.WeatherAlert
+import com.example.forecanow.setting.AppSettings
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherLocalDataSourceInterface {
@@ -21,5 +22,8 @@ interface WeatherLocalDataSourceInterface {
     fun getAllFavorites(): Flow<List<FavoriteLocation>>
 
     suspend fun getFavoriteById(id: Int): FavoriteLocation?
+
+    suspend fun saveSettings(settings: AppSettings)
+    suspend fun getSettings(): AppSettings?
 
 }

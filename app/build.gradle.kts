@@ -113,7 +113,7 @@ dependencies {
     }
 
     //Glide
-    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+    implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.8")
@@ -134,5 +134,8 @@ dependencies {
         exclude(group = "com.google.android.gms", module = "play-services-location")
     }
 
+    implementation ("org.osmdroid:osmdroid-mapsforge:6.1.16")
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
 }

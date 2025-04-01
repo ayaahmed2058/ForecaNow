@@ -3,8 +3,10 @@ package com.example.forecanow.db
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.forecanow.alarm.model.WeatherAlert
+import com.example.forecanow.setting.SettingsEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,4 +32,10 @@ interface WeatherDao {
 
     @Query("SELECT * FROM favorite_locations WHERE id = :id")
     suspend fun getFavoriteById(id: Int): FavoriteLocation?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveSettings(settings: SettingsEntity)
+
+    @Query("SELECT * FROM settings LIMIT 1")
+    suspend fun getSettings(): SettingsEntity?
 }

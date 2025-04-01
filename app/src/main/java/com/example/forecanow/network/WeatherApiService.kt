@@ -9,15 +9,16 @@ import retrofit2.Response
 
 interface WeatherApiService {
 
-    private val api : String
-        get() = "a3365ae40ef680fba58631df13f8ac34"
+    companion object {
+        private const val API_KEY = "a3365ae40ef680fba58631df13f8ac34"
+    }
 
     @GET("weather")
     suspend fun getCurrentWeather(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
         @Query("units") units: String = "metric",
-        @Query("appid") apiKey: String = api
+        @Query("appid") apiKey: String = API_KEY
     ): Response<WeatherResponse>
 
 
@@ -25,7 +26,7 @@ interface WeatherApiService {
     suspend fun getHourlyForecast(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("appid") apiKey: String = api,
-        @Query("units") units: String = "metric"
+        @Query("units") units: String = "metric",
+        @Query("appid") apiKey: String = API_KEY
     ): Response<ForecastResponse>
 }

@@ -1,6 +1,6 @@
 package com.example.forecanow
 
-import android.content.Intent
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,7 +36,7 @@ import com.example.forecanow.alarm.view.AlertScreen
 import com.example.forecanow.favorite.FavoriteScreen
 import com.example.forecanow.favorite.MapScreen
 import com.example.forecanow.home.view.HomeScreen
-import com.example.forecanow.setting.SettingScreen
+import com.example.forecanow.setting.SettingsScreen
 import kotlinx.coroutines.launch
 
 
@@ -109,7 +109,9 @@ fun MainScreen() {
                 startDestination = "home",
                 modifier = Modifier.padding(paddingValues)
             ) {
-                composable("home") { HomeScreen() }
+                composable("home") {
+                    HomeScreen()
+                    }
                 composable("favorite") {
                     FavoriteScreen(
                         onNavigateToDetails = { favorite ->
@@ -121,7 +123,9 @@ fun MainScreen() {
                     )
                 }
                 composable("alarm") { AlertScreen() }
-                composable("settings") { SettingScreen() }
+                composable("settings") {
+                    SettingsScreen()
+                }
 
                 composable("map") {
                     MapScreen(onBack = { navController.popBackStack() })
