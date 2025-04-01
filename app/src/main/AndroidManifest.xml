@@ -2,16 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
+        tools:replace="android:allowBackup"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -19,8 +21,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ForecaNow"
-        tools:targetApi="31"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
+
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+
 
         <receiver android:name=".alarm.AlertReceiver" />
 
@@ -30,39 +35,20 @@
             android:label="@string/title_activity_setting_screen"
             android:theme="@style/Theme.ForecaNow" />
         <activity
-            android:name=".home.HomeScreen"
+            android:name=".MainActivity"
             android:exported="false"
-            android:label="@string/title_activity_home_screen"
-            android:theme="@style/Theme.ForecaNow" >
-        </activity>
+            android:label="@string/title_activity_main"
+            android:theme="@style/Theme.ForecaNow"/>
         <activity
-            android:name=".favorite.FavoriteScreen"
-            android:exported="false"
-            android:label="@string/title_activity_favorite_screen"
-            android:theme="@style/Theme.ForecaNow" />
-        <activity
-            android:name=".alarm.AlarmScreen"
+            android:name=".WelcomeScreen"
             android:exported="true"
-            android:label="@string/title_activity_alarm_screen"
-            android:theme="@style/Theme.ForecaNow" >
+            android:label="@string/title_activity_welcome_screen"
+            android:theme="@style/Theme.ForecaNow">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
-            android:label="@string/title_activity_main"
-            android:theme="@style/Theme.ForecaNow" >
-        </activity>
-        <activity
-            android:name=".WelcomeScreen"
-            android:exported="false"
-            android:label="@string/title_activity_welcome_screen"
-            android:theme="@style/Theme.ForecaNow">
-
         </activity>
     </application>
 

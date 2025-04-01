@@ -1,14 +1,11 @@
 package com.example.forecanow.home.viewModel
 
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecanow.model.Response
 import com.example.forecanow.model.ForecastResultResponse
-import com.example.forecanow.pojo.ForecastResponse
 import com.example.forecanow.repository.RepositoryImp
 import com.example.forecanow.repository.RepositoryInterface
 import kotlinx.coroutines.Dispatchers

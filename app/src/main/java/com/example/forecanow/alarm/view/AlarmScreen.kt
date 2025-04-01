@@ -1,4 +1,4 @@
-package com.example.forecanow.alarm
+package com.example.forecanow.alarm.view
 
 
 import android.app.TimePickerDialog
@@ -7,47 +7,39 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModelProvider
 import java.util.Calendar
 import android.app.DatePickerDialog
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.forecanow.R
+import com.example.forecanow.alarm.AlarmViewModelFactory
+import com.example.forecanow.alarm.AlertViewModel
+import com.example.forecanow.alarm.model.WeatherAlert
+import com.example.forecanow.db.WeatherDatabase
+import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
+import com.example.forecanow.network.RetrofitHelper
+import com.example.forecanow.network.WeatherRemoteDataSourceImp
+import com.example.forecanow.repository.RepositoryImp
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-
-
-class AlarmScreen : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            val factory = AlarmViewModelFactory(
-                AlertRepository(AlertDatabase.getDatabase(this).alertDao())
-            )
-
-            val viewModel = ViewModelProvider(this, factory).get(AlertViewModel::class.java)
-
-            AlertScreen(viewModel)
-        }
-    }
-}
-
-
 @Composable
-fun AlertScreen(viewModel: AlertViewModel) {
+fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFactory(
+    RepositoryImp.getInstance(WeatherRemoteDataSourceImp(RetrofitHelper.api),
+        WeatherLocalDataSourceInterfaceImp(WeatherDatabase.getDatabase(LocalContext.current).weatherDao()))
+))) {
+
     val alerts by viewModel.alerts.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -55,7 +47,7 @@ fun AlertScreen(viewModel: AlertViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Alert")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_alert))
             }
         }
     ) { paddingValues ->
@@ -69,8 +61,8 @@ fun AlertScreen(viewModel: AlertViewModel) {
     if (showDialog) {
         AlertInputDialog(
             onDismiss = { showDialog = false },
-            onConfirm = { type, startTime, endTime, alertType ->
-                viewModel.addAlert(type, startTime, endTime, alertType, context)
+            onConfirm = {startTime, endTime, alertType ->
+                viewModel.addAlert(startTime, endTime, alertType, context)
                 showDialog = false
             }
         )
@@ -80,54 +72,56 @@ fun AlertScreen(viewModel: AlertViewModel) {
 
 
 @Composable
-fun AlertInputDialog(onDismiss: () -> Unit, onConfirm: (String, Long, Long, String) -> Unit) {
+fun AlertInputDialog(onDismiss: () -> Unit, onConfirm: (Long, Long, String) -> Unit) {
     var type by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf(System.currentTimeMillis()) }
     var endTime by remember { mutableStateOf(System.currentTimeMillis() + 3600000) }
-    var alertType by remember { mutableStateOf("Notification") } // Default
+
+    val alertTypeDefault = stringResource(R.string.notification)
+    var alertType by remember { mutableStateOf(alertTypeDefault) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Weather Alert") },
+        title = { Text(stringResource(R.string.add_weather_alert)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = type,
                     onValueChange = { type = it },
-                    label = { Text("Alert Type") }
+                    label = { Text(stringResource(R.string.alert_type)) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                DatePickerButton("Select Start Time") { time -> startTime = time }
-                DatePickerButton("Select End Time") { time -> endTime = time }
+                DatePickerButton(stringResource(R.string.select_start_time)) { time -> startTime = time }
+                DatePickerButton(stringResource(R.string.select_end_time)) { time -> endTime = time }
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Choose Alert Method:")
+                Text(stringResource(R.string.choose_alert_method))
                 Row {
                     RadioButton(
-                        selected = alertType == "Notification",
-                        onClick = { alertType = "Notification" }
+                        selected = alertType == stringResource(R.string.notification),
+                        onClick = { alertType ="Notification" }
                     )
-                    Text("Notification")
+                    Text(stringResource(R.string.notification))
 
                     Spacer(modifier = Modifier.width(16.dp))
 
                     RadioButton(
-                        selected = alertType == "Alarm",
+                        selected = alertType == stringResource(R.string.alarm),
                         onClick = { alertType = "Alarm" }
                     )
-                    Text("Alarm")
+                    Text(stringResource(R.string.alarm))
                 }
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(type, startTime, endTime, alertType) }) {
-                Text("Add")
+            Button(onClick = { onConfirm(startTime, endTime, alertType) }) {
+                Text(stringResource(R.string.add))
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -183,11 +177,11 @@ fun AlertItem(alert: WeatherAlert, onDelete: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "From: ${formatTimestamp(alert.startTime)}")
-                Text(text = "To: ${formatTimestamp(alert.endTime)}")
+                Text(text = stringResource(R.string.from, formatTimestamp(alert.startTime)))
+                Text(text = stringResource(R.string.to, formatTimestamp(alert.endTime)))
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete Alert")
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_alert))
             }
         }
     }

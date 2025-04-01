@@ -1,4 +1,4 @@
-package com.example.forecanow.alarm
+package com.example.forecanow.alarm.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

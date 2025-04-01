@@ -8,14 +8,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
-import android.media.RingtoneManager
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import android.os.Build
+import com.example.forecanow.db.WeatherDatabase
+import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
 import com.example.forecanow.home.viewModel.HomeViewModel
 import com.example.forecanow.model.Response
 import com.example.forecanow.network.RetrofitHelper
-import com.example.forecanow.network.WeatherRemoteDataSource
+import com.example.forecanow.network.WeatherRemoteDataSourceImp
 import com.example.forecanow.repository.RepositoryImp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +39,8 @@ class AlertReceiver : BroadcastReceiver() {
     }
 
     private fun fetchWeatherAndShowNotification(context: Context, alertType: String, lat: Double, lon: Double) {
-        val repository = RepositoryImp.getInstance(WeatherRemoteDataSource(RetrofitHelper.api))
+        val repository =  RepositoryImp.getInstance(WeatherRemoteDataSourceImp(RetrofitHelper.api),
+            WeatherLocalDataSourceInterfaceImp(WeatherDatabase.getDatabase(context).weatherDao()))
         val viewModel = HomeViewModel(repository)
 
         CoroutineScope(Dispatchers.IO).launch {

@@ -10,16 +10,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecanow.LocationManager
+import com.example.forecanow.alarm.model.WeatherAlert
+import com.example.forecanow.repository.RepositoryImp
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AlertViewModel(private val repository: AlertRepository) : ViewModel() {
+class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
     private val _alerts = MutableStateFlow<List<WeatherAlert>>(emptyList())
     val alerts: StateFlow<List<WeatherAlert>> = _alerts
 
     init {
+        getAllAlerts()
+    }
+
+    fun getAllAlerts(){
         viewModelScope.launch {
             repository.getAllAlerts().collect { alertsList ->
                 _alerts.value = alertsList
@@ -27,13 +33,17 @@ class AlertViewModel(private val repository: AlertRepository) : ViewModel() {
         }
     }
 
-    fun addAlert(type: String, startTime: Long, endTime: Long, alertType: String, context: Context) {
+    fun addAlert(startTime: Long, endTime: Long, alertType: String, context: Context) {
         val locationHelper = LocationManager(context, LocationServices.getFusedLocationProviderClient(context))
 
         locationHelper.getFreshLocation(
             onSuccess = { location ->
                 viewModelScope.launch {
-                    val newAlert = WeatherAlert(startTime = startTime, endTime = endTime, alertType = alertType)
+                    val newAlert = WeatherAlert(
+                        startTime = startTime,
+                        endTime = endTime,
+                        alertType = alertType
+                    )
                     repository.insertAlert(newAlert)
                     scheduleAlert(context, startTime, alertType, location.latitude, location.longitude)
                 }
@@ -82,7 +92,7 @@ class AlertViewModel(private val repository: AlertRepository) : ViewModel() {
     }
 }
 
-class AlarmViewModelFactory (private val repository: AlertRepository):ViewModelProvider.Factory{
+class AlarmViewModelFactory (private val repository: RepositoryImp):ViewModelProvider.Factory{
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return AlertViewModel(repository) as T
     }
