@@ -13,13 +13,10 @@ import kotlinx.coroutines.flow.Flow
 interface WeatherDao {
     @Query("SELECT * FROM weather_alerts")
     fun getAllAlerts(): Flow<List<WeatherAlert>>
-
     @Insert
     suspend fun insertAlert(alert: WeatherAlert)
-
     @Delete
     suspend fun deleteAlert(alert: WeatherAlert)
-
 
     @Insert
     suspend fun insertFavorite(favorite: FavoriteLocation)

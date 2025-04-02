@@ -1,5 +1,6 @@
 package com.example.forecanow.db
 
+import android.util.Log
 import com.example.forecanow.alarm.model.WeatherAlert
 import com.example.forecanow.setting.AppLanguage
 import com.example.forecanow.setting.AppSettings
@@ -50,12 +51,18 @@ class WeatherLocalDataSourceInterfaceImp (private val dao: WeatherDao): WeatherL
     }
 
     override suspend fun getSettings(): AppSettings? {
-        val entity = dao.getSettings() ?: return null
-        return AppSettings(
-            temperatureUnit = TemperatureUnit.valueOf(entity.temperatureUnit),
-            windSpeedUnit = WindSpeedUnit.valueOf(entity.windSpeedUnit),
-            language = AppLanguage.valueOf(entity.language),
-            locationSource = LocationSource.valueOf(entity.locationSource)
-        )
+        return dao.getSettings()?.let {
+            try {
+                AppSettings(
+                    temperatureUnit = enumValueOf<TemperatureUnit>(it.temperatureUnit),
+                    windSpeedUnit = enumValueOf<WindSpeedUnit>(it.windSpeedUnit),
+                    language = enumValueOf<AppLanguage>(it.language),
+                    locationSource = enumValueOf<LocationSource>(it.locationSource)
+                )
+            } catch (e: Exception) {
+                Log.e("LocalDataSource", "Error parsing settings", e)
+                null
+            }
+        }
     }
 }

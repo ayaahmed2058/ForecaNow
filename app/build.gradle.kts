@@ -107,13 +107,13 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
-    // Location - أضف exclude بشكل صحيح
+    // Location
     implementation("com.google.android.gms:play-services-location:21.1.0") {
         exclude(group = "com.google.android.gms", module = "play-services-location")
     }
 
     //Glide
-    implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
+    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.8")

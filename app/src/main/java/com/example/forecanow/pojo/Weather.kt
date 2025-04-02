@@ -16,7 +16,6 @@ data class Main(
     val humidity: Int
 )
 
-
 data class Wind(
     val speed: Double,
     val deg: Int

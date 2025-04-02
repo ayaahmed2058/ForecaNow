@@ -58,4 +58,20 @@
     <string name="choose_app_language">Select preferred app language</string>
     <string name="english">English</string>
     <string name="arabic">Arabic</string>
+    <string name="celsius_symbol">°C</string>
+    <string name="fahrenheit_symbol">°F</string>
+    <string name="kelvin_symbol">K</string>
+    <string name="meter_per_second">m/s</string>
+    <string name="mile_per_hour">mph</string>
+    <string name="hpa_unit">hPa</string>
+    <string name="clear_sky">Clear Sky</string>
+    <string name="few_clouds">Few Clouds</string>
+    <string name="scattered_clouds">Scattered Clouds</string>
+    <string name="broken_clouds">Partly Cloudy</string>
+    <string name="shower_rain">Light Rain</string>
+    <string name="rain">Rain</string>
+    <string name="thunderstorm">Thunderstorm</string>
+    <string name="snow">Snow</string>
+    <string name="mist">Mist</string>
+
 </resources>

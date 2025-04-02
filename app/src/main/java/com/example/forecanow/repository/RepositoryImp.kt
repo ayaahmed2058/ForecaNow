@@ -1,5 +1,6 @@
 package com.example.forecanow.repository
 
+import android.util.Log
 import com.example.forecanow.alarm.model.WeatherAlert
 import com.example.forecanow.db.FavoriteLocation
 import com.example.forecanow.db.WeatherLocalDataSourceInterface
@@ -56,15 +57,22 @@ class RepositoryImp private constructor(
     }
 
     override suspend fun saveSettings(settings: AppSettings) {
-
-        weatherLocalDataSource.saveSettings(settings)
+        try {
+            weatherLocalDataSource.saveSettings(settings)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error saving settings", e)
+            throw e
+        }
     }
 
     override suspend fun getSettings(): AppSettings? {
-
-        return weatherLocalDataSource.getSettings()
+        return try {
+            weatherLocalDataSource.getSettings()
+        } catch (e: Exception) {
+            Log.e("Repository", "Error loading settings", e)
+            null
+        }
     }
-
 
     companion object{
         @Volatile

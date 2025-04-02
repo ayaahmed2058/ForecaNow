@@ -3,6 +3,11 @@ package com.example.forecanow.setting
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.res.Configuration
+import android.os.Build
+import android.util.Log
+import java.util.Locale
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
-import java.util.Locale
 import androidx.compose.runtime.getValue
 import com.example.forecanow.db.WeatherDatabase
 import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
@@ -55,8 +60,14 @@ fun SettingsScreen(
     ),
     onNavigateToMap: () -> Unit = {}
 ) {
-    val settings by viewModel.settings.collectAsState()
     val context = LocalContext.current
+    val settings by viewModel.settings.collectAsState()
+
+    LaunchedEffect(settings) {
+        if (settings.language != AppLanguage.ENGLISH && settings.language != AppLanguage.ARABIC) {
+            viewModel.updateLanguage(AppLanguage.ENGLISH)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -74,62 +85,13 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            item {
-                SettingsCategory(title = stringResource(R.string.location_settings))
-            }
-
-            item {
-                LocationPreference(
-                    currentSource = settings.locationSource,
-                    onSourceSelected = { source ->
-                        if (source == LocationSource.MAP) {
-                            onNavigateToMap()
-                        } else {
-                            viewModel.updateLocationSource(source)
-                        }
-                    }
-                )
-            }
-
-            item {
-                SettingsCategory(title = stringResource(R.string.unit_settings))
-            }
-
-            item {
-                TemperatureUnitPreference(
-                    currentUnit = settings.temperatureUnit,
-                    onUnitSelected = { unit ->
-                        viewModel.updateTemperatureUnit(unit)
-                    }
-                )
-            }
-
-            item {
-                WindSpeedUnitPreference(
-                    currentUnit = settings.windSpeedUnit,
-                    onUnitSelected = { unit ->
-                        viewModel.updateWindSpeedUnit(unit)
-                    }
-                )
-            }
-
-            item {
-                SettingsCategory(title = stringResource(R.string.language_settings))
-            }
-
-            item {
-                LanguagePreference(
-                    currentLanguage = settings.language,
-                    onLanguageSelected = { language ->
-                        viewModel.updateLanguage(language)
-                        // You might need to restart the app or update Locale here
-                        updateLocale(context, language)
-                    }
-                )
-            }
+            item { LocationPreferenceSection(settings, viewModel, onNavigateToMap) }
+            item { UnitsPreferenceSection(settings, viewModel) }
+            item { LanguagePreferenceSection(settings, viewModel, context) }
         }
     }
 }
+
 
 @Composable
 private fun SettingsCategory(title: String) {
@@ -314,6 +276,60 @@ private fun LanguagePreference(
     }
 }
 
+@Composable
+private fun LocationPreferenceSection(
+    settings: AppSettings,
+    viewModel: SettingsViewModel,
+    onNavigateToMap: () -> Unit
+) {
+    SettingsCategory(title = stringResource(R.string.location_settings))
+    LocationPreference(
+        currentSource = settings.locationSource,
+        onSourceSelected = { source ->
+            if (source == LocationSource.MAP) {
+                onNavigateToMap()
+            }
+            viewModel.updateSettings(settings.copy(locationSource = source))
+        }
+    )
+}
+
+@Composable
+private fun UnitsPreferenceSection(
+    settings: AppSettings,
+    viewModel: SettingsViewModel
+) {
+    SettingsCategory(title = stringResource(R.string.unit_settings))
+    TemperatureUnitPreference(
+        currentUnit = settings.temperatureUnit,
+        onUnitSelected = { unit ->
+            viewModel.updateSettings(settings.copy(temperatureUnit = unit))
+        }
+    )
+    WindSpeedUnitPreference(
+        currentUnit = settings.windSpeedUnit,
+        onUnitSelected = { unit ->
+            viewModel.updateSettings(settings.copy(windSpeedUnit = unit))
+        }
+    )
+}
+
+@Composable
+private fun LanguagePreferenceSection(
+    settings: AppSettings,
+    viewModel: SettingsViewModel,
+    context: Context
+) {
+    SettingsCategory(title = stringResource(R.string.language_settings))
+    LanguagePreference(
+        currentLanguage = settings.language,
+        onLanguageSelected = { language ->
+            viewModel.updateSettings(settings.copy(language = language))
+            updateLocale(context, language)
+        }
+    )
+}
+
 private fun updateLocale(context: Context, language: AppLanguage) {
     val locale = when (language) {
         AppLanguage.ENGLISH -> Locale("en")
@@ -321,11 +337,15 @@ private fun updateLocale(context: Context, language: AppLanguage) {
     }
 
     val resources = context.resources
-    val configuration = resources.configuration
+    val configuration = Configuration(resources.configuration)
     configuration.setLocale(locale)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        context.createConfigurationContext(configuration)
+    }
+
     resources.updateConfiguration(configuration, resources.displayMetrics)
 
-    // You might want to restart the activity to apply language changes
     if (context is Activity) {
         context.recreate()
     }
