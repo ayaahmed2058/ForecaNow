@@ -2,7 +2,6 @@ package com.example.forecanow.home.view
 
 import android.content.Context
 import android.location.Location
-import android.os.Build
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +30,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.forecanow.LocationManager
 import com.example.forecanow.R
 import com.example.forecanow.db.WeatherDatabase
 import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
@@ -44,9 +45,15 @@ import com.example.forecanow.network.WeatherRemoteDataSourceImp
 import com.example.forecanow.pojo.HourlyWeather
 import com.example.forecanow.repository.RepositoryImp
 import com.example.forecanow.setting.*
+import com.example.forecanow.utils.LocalizationHelper
+import com.example.forecanow.utils.LocationManager
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
+import org.osmdroid.util.GeoPoint
 import java.text.SimpleDateFormat
 import java.util.*
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,30 +77,16 @@ fun HomeScreen(
                 )
             )
         )
-    )
+    ),
+    navController: NavController
 ) {
     val context = LocalContext.current
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val locationHelper = remember { LocationManager(context, fusedLocationProviderClient) }
     val settings by settingsViewModel.settings.collectAsState()
 
-    val temperatureAndWindSpeed = remember(settings) {
-        derivedStateOf {
-            Pair(
-                when (settings.temperatureUnit) {
-                    TemperatureUnit.CELSIUS -> "°C"
-                    TemperatureUnit.FAHRENHEIT -> "°F"
-                    TemperatureUnit.KELVIN -> "K"
-                },
-                when (settings.windSpeedUnit) {
-                    WindSpeedUnit.METERS_PER_SECOND -> "m/s"
-                    WindSpeedUnit.MILES_PER_HOUR -> "mph"
-                }
-            )
-        }
-    }
 
-    val (temperatureUnitSymbol, windSpeedUnitSymbol) = temperatureAndWindSpeed.value
+    val manualLocation by viewModel.manualLocation.collectAsState()
 
 
     val apiUnits by remember(settings.temperatureUnit) {
@@ -106,30 +99,67 @@ fun HomeScreen(
         }
     }
 
-    fun fetchWeather(location: Location) {
-        viewModel.getCurrentWeather(location.latitude, location.longitude, apiUnits)
-        viewModel.getHourlyForecast(location.latitude, location.longitude, apiUnits)
+    fun fetchWeather(lat: Double, lon: Double) {
+        viewModel.getCurrentWeather(lat, lon, apiUnits)
+        viewModel.getHourlyForecast(lat, lon, apiUnits)
     }
+
+    val selectedLocationLiveData = remember {
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.getLiveData<LatLng?>("selected_location")
+    }
+
+
+    LaunchedEffect(settings.locationSource) {
+        when (settings.locationSource) {
+            LocationSource.GPS -> {
+                fetchLocationAndWeather(locationHelper, { location ->
+                    fetchWeather(location.latitude, location.longitude)
+                }, context)
+            }
+            LocationSource.OPEN_STREET_MAP -> {
+                manualLocation?.let {
+                    fetchWeather(it.latitude, it.longitude)
+                }
+            }
+        }
+    }
+
+
+    var forceRefresh by remember { mutableStateOf(false) }
+    val selectedLocation by selectedLocationLiveData?.observeAsState() ?: remember { mutableStateOf(null) }
+
+
+    LaunchedEffect(selectedLocation) {
+        selectedLocation?.let { latLng ->
+            val newLocation = GeoPoint(latLng.latitude, latLng.longitude)
+            viewModel.updateManualLocation(newLocation)
+            settingsViewModel.updateLocationSource(LocationSource.OPEN_STREET_MAP)
+            fetchWeather(latLng.latitude, latLng.longitude)
+
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<LatLng>("selected_location")
+        }
+    }
+
 
     LaunchedEffect(Unit) {
         settingsViewModel.loadInitialSettings()
-        fetchLocationAndWeather(locationHelper, { location ->
-            fetchWeather(location)
-        }, context)
-    }
-
-    LaunchedEffect(settings) {
-        if (viewModel.weather.value is Response.Success ||
-            viewModel.weather.value is Response.Failure
-        ) {
-            locationHelper.getFreshLocation(
-                onSuccess = { location -> fetchWeather(location) },
-                onFailure = { error ->
-                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                }
-            )
+        if (settings.locationSource == LocationSource.GPS) {
+            fetchLocationAndWeather(locationHelper, { location ->
+                fetchWeather(location.latitude, location.longitude)
+            }, context)
         }
     }
+
+    LaunchedEffect(manualLocation) {
+        manualLocation?.let { location ->
+            fetchWeather(location.latitude, location.longitude)
+        }
+    }
+
 
     val weatherState by viewModel.weather.collectAsState()
     val forecastState by viewModel.forecast.collectAsState()
@@ -177,14 +207,18 @@ fun HomeScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         ) {
                             Text(
-                                text = "${weatherData.name}, ${weatherData.sys.country}",
+                                text = if (LocalizationHelper.isArabicLanguage(context)) {
+                                    "${weatherData.name}, ${getCountryName(weatherData.sys.country, context)}"
+                                } else {
+                                    "${weatherData.name}, ${weatherData.sys.country}"
+                                },
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = Color(0xFF2D3748),
                                 fontWeight = FontWeight.Bold
                             )
 
                             Text(
-                                text = if (isArabicLanguage(context)) {
+                                text = if (LocalizationHelper.isArabicLanguage(context)) {
                                     SimpleDateFormat("EEEE, dd MMMM yyyy - hh:mm a", Locale("ar")).format(Date())
                                 } else {
                                     SimpleDateFormat("EEEE, dd MMMM yyyy - hh:mm a", Locale.getDefault()).format(Date())
@@ -211,7 +245,7 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Text(
-                                        text = "$temp${temperatureUnitSymbol}",
+                                        text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnitSymbol",context),
                                         style = MaterialTheme.typography.displayMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF2D3748)
@@ -224,7 +258,7 @@ fun HomeScreen(
                                 }
 
                                 Text(
-                                    text = if (isArabicLanguage(context)) {
+                                    text = if (LocalizationHelper.isArabicLanguage(context)) {
                                         getArabicWeatherDescription(description).replaceFirstChar { it }
                                     } else {
                                         description.replaceFirstChar { it.titlecase() }
@@ -412,7 +446,7 @@ fun HomeScreen(
                         Button(
                             onClick = {
                                 locationHelper.getFreshLocation(
-                                    onSuccess = { location -> fetchWeather(location) },
+                                    onSuccess = { location ->  fetchWeather(location.latitude, location.longitude) },
                                     onFailure = { error ->
                                         Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                                     }
@@ -440,6 +474,7 @@ fun WeatherDetailCard(
     unit: String,
     color: Color
 ) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -457,7 +492,7 @@ fun WeatherDetailCard(
             )
             Text(text = title, style = MaterialTheme.typography.bodySmall)
             Text(
-                text = "$value$unit",
+                text = LocalizationHelper.convertToArabicNumbers("$value$unit",context),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -495,7 +530,7 @@ fun HourlyForecastItem(item: HourlyWeather, temperatureUnit: String) {
             )
 
             Text(
-                text = "$temperature$temperatureUnit",
+                text = LocalizationHelper.convertToArabicNumbers("$temperature$temperatureUnit",context),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF2D3748)
@@ -508,7 +543,7 @@ fun HourlyForecastItem(item: HourlyWeather, temperatureUnit: String) {
 fun DailyForecastItem(item: HourlyWeather, temperatureUnit: String) {
     val context = LocalContext.current
     val date = formatDate(item.dt, context)
-    val maxTemp = item.main.temp.toInt()
+    val temp = item.main.temp.toInt()
     val icon = item.weather.firstOrNull()?.icon ?: "01d"
 
     Card(
@@ -536,17 +571,12 @@ fun DailyForecastItem(item: HourlyWeather, temperatureUnit: String) {
                 modifier = Modifier.size(40.dp)
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "$maxTemp$temperatureUnit",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2D3748)
-                )
-            }
+            Text(
+                text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnit", context),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF2D3748)
+            )
         }
     }
 }
@@ -595,7 +625,7 @@ private fun fetchLocationAndWeather(
     }
 }
 
-private fun convertWindSpeed(speed: Double, unit: WindSpeedUnit): String {
+ fun convertWindSpeed(speed: Double, unit: WindSpeedUnit): String {
     val convertedSpeed = when (unit) {
         WindSpeedUnit.METERS_PER_SECOND -> speed
         WindSpeedUnit.MILES_PER_HOUR -> speed * 2.23694
@@ -603,34 +633,37 @@ private fun convertWindSpeed(speed: Double, unit: WindSpeedUnit): String {
     return "%.1f".format(convertedSpeed)
 }
 
-private fun formatTime(timestamp: Long, context: Context): String {
-    return if (isArabicLanguage(context)) {
-        val sdf = SimpleDateFormat("hh:mm a", Locale("ar"))
-        sdf.timeZone = TimeZone.getDefault()
-        sdf.format(Date(timestamp * 1000))
+@Composable
+ fun formatTime(timestamp: Long, context: Context): String {
+    val time = if (LocalizationHelper.isArabicLanguage()) {
+        SimpleDateFormat("hh:mm a", Locale("ar")).format(Date(timestamp * 1000))
     } else {
-        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        sdf.timeZone = TimeZone.getDefault()
-        sdf.format(Date(timestamp * 1000))
+        SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(timestamp * 1000))
     }
+    return LocalizationHelper.convertToArabicNumbers(time,context)
 }
 
-private fun formatDate(timestamp: Long, context: Context): String {
-    return if (isArabicLanguage(context)) {
-        val sdf = SimpleDateFormat("EEE, MMM dd", Locale("ar"))
-        sdf.timeZone = TimeZone.getDefault()
-        sdf.format(Date(timestamp * 1000))
+@Composable
+ fun formatDate(timestamp: Long, context: Context): String {
+    val date = if (LocalizationHelper.isArabicLanguage()) {
+        SimpleDateFormat("EEE, MMM dd", Locale("ar")).format(Date(timestamp * 1000))
     } else {
-        val sdf = SimpleDateFormat("EEE, MMM dd", Locale.getDefault())
-        sdf.timeZone = TimeZone.getDefault()
-        sdf.format(Date(timestamp * 1000))
+        SimpleDateFormat("EEE, MMM dd", Locale.getDefault()).format(Date(timestamp * 1000))
     }
+    return LocalizationHelper.convertToArabicNumbers(date,context)
 }
 
-private fun extractDailyForecast(hourlyList: List<HourlyWeather>, context: Context): List<HourlyWeather> {
+ fun extractDailyForecast(hourlyList: List<HourlyWeather>, context: Context): List<HourlyWeather> {
+    val calendar = Calendar.getInstance()
+    val currentDate = calendar.time
+
     return hourlyList
+        .filter { item ->
+            val itemDate = Date(item.dt * 1000)
+            !isSameDay(currentDate, itemDate)
+        }
         .groupBy { item ->
-            if (isArabicLanguage(context)) {
+            if (LocalizationHelper.isArabicLanguage(context)) {
                 SimpleDateFormat("yyyy-MM-dd", Locale("ar"))
                     .format(Date(item.dt * 1000))
             } else {
@@ -642,16 +675,17 @@ private fun extractDailyForecast(hourlyList: List<HourlyWeather>, context: Conte
             items.maxByOrNull { it.main.temp } ?: items.first()
         }
         .sortedBy { it.dt }
+        .take(5)
 }
 
-fun isArabicLanguage(context: Context): Boolean {
-    val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        context.resources.configuration.locales[0]
-    } else {
-        context.resources.configuration.locale
-    }
-    return locale.language == "ar"
+private fun isSameDay(date1: Date, date2: Date): Boolean {
+    val cal1 = Calendar.getInstance().apply { time = date1 }
+    val cal2 = Calendar.getInstance().apply { time = date2 }
+    return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+            cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+            cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
 }
+
 
 @Composable
 fun getArabicWeatherDescription(description: String): String {
@@ -690,3 +724,17 @@ fun getWindSpeedUnitSymbol(unit: WindSpeedUnit): String {
 fun getPressureUnit(): String {
     return stringResource(R.string.hpa_unit)
 }
+
+fun getCountryName(countryCode: String, context: Context): String {
+    val resourceName = "country_${countryCode.lowercase()}"
+    val resourceId = context.resources.getIdentifier(resourceName, "string", context.packageName)
+
+    return if (resourceId != 0) {
+        context.getString(resourceId)
+    } else {
+        countryCode
+    }
+}
+
+
+

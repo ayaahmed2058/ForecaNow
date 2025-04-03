@@ -1,4 +1,4 @@
-package com.example.forecanow
+package com.example.forecanow.utils
 
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION

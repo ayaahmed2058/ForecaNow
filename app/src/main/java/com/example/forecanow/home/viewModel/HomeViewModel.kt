@@ -14,9 +14,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
 
-class HomeViewModel (private val repository: RepositoryInterface) : ViewModel() {
+class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
 
     private val mutableWeather =  MutableStateFlow<Response>(Response.Loading)
     val weather = mutableWeather.asStateFlow()
@@ -29,6 +31,9 @@ class HomeViewModel (private val repository: RepositoryInterface) : ViewModel() 
 
     private val mutableForecast = MutableStateFlow<ForecastResultResponse>(ForecastResultResponse.Loading)
     val forecast = mutableForecast.asStateFlow()
+
+    private val _manualLocation = MutableStateFlow<GeoPoint?>(null)
+    val manualLocation = _manualLocation.asStateFlow()
 
     fun getCurrentWeather(lat: Double, lon: Double, units: String = "metric") {
         viewModelScope.launch {
@@ -68,6 +73,20 @@ class HomeViewModel (private val repository: RepositoryInterface) : ViewModel() 
                 mutableForecast.value = ForecastResultResponse.Failure(e)
                 mutableMessage.emit("an error occurred ${e.message}")
             }
+        }
+    }
+
+    fun updateManualLocation(location: GeoPoint) {
+        _manualLocation.value = location
+    }
+
+
+    suspend fun getCityName(lat: Double, lon: Double): String {
+        return try {
+            val response = repository.getWeather(lat, lon, "metric").first()
+            response.name
+        } catch (e: Exception) {
+            "Unknown Location"
         }
     }
 

@@ -11,21 +11,15 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class FavoriteViewModel(private val repository: RepositoryInterface) : ViewModel() {
+class FavoriteViewModel( val repository: RepositoryInterface) : ViewModel() {
     private val _favorites = MutableStateFlow<List<FavoriteLocation>>(emptyList())
     val favorites = _favorites.asStateFlow()
-
-    private val _navigateToDetails = MutableSharedFlow<FavoriteLocation>()
-    val navigateToDetails = _navigateToDetails.asSharedFlow()
-
-    private val _showAddDialog = MutableStateFlow(false)
-    val showAddDialog = _showAddDialog.asStateFlow()
 
     init {
         getAllFavorites()
     }
 
-    fun getAllFavorites(){
+    fun getAllFavorites() {
         viewModelScope.launch {
             repository.getAllFavorites().collect { favoritesList ->
                 _favorites.value = favoritesList
@@ -33,18 +27,8 @@ class FavoriteViewModel(private val repository: RepositoryInterface) : ViewModel
         }
     }
 
-    fun onFavoriteClicked(favorite: FavoriteLocation) {
-        viewModelScope.launch {
-            _navigateToDetails.emit(favorite)
-        }
-    }
-
-    fun showAddFavoriteDialog() {
-        _showAddDialog.value = true
-    }
-
-    fun dismissAddFavoriteDialog() {
-        _showAddDialog.value = false
+    suspend fun getFavoriteById(id: Int): FavoriteLocation? {
+        return repository.getFavoriteById(id)
     }
 
     fun addFavorite(location: FavoriteLocation) {
@@ -58,6 +42,7 @@ class FavoriteViewModel(private val repository: RepositoryInterface) : ViewModel
             repository.deleteFavorite(location)
         }
     }
+
 }
 
 class FavoriteViewModelFactory(private val repo: RepositoryInterface) : ViewModelProvider.Factory {

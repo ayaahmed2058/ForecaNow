@@ -21,5 +21,5 @@ enum class AppLanguage {
 }
 
 enum class LocationSource {
-    GPS, MAP
+    GPS, OPEN_STREET_MAP
 }

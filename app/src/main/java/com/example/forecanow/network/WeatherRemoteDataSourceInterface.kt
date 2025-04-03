@@ -12,4 +12,5 @@ interface WeatherRemoteDataSourceInterface {
 
     suspend fun getHourlyForecast (lat: Double, lon: Double, units: String)
             : Flow<ForecastResponse>
+
 }

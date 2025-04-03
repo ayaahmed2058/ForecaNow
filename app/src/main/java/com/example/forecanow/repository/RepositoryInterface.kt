@@ -26,4 +26,5 @@ interface RepositoryInterface {
 
     suspend fun saveSettings(settings: AppSettings)
     suspend fun getSettings(): AppSettings?
+
 }

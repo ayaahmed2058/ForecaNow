@@ -1,12 +1,7 @@
 <resources>
     <string name="app_name">ForecaNow</string>
     <string name="title_activity_welcome_screen">WelcomeScreen</string>
-    <string name="title_activity_home_screen">HomeScreen</string>
-    <string name="title_activity_favourite_screen">FavouriteScreen</string>
-    <string name="title_activity_alarm_screen">AlarmScreen</string>
-    <string name="title_activity_setting_screen">SettingScreen</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_favorite_screen">FavoriteScreen</string>
     <string name="add_alert">Add Alert</string>
     <string name="notification">Notification</string>
     <string name="add_weather_alert">Add Weather Alert</string>
@@ -44,7 +39,6 @@
     <string name="location_source">Location Source</string>
     <string name="choose_location_source">Choose how to determine your location</string>
     <string name="gps_location">Use GPS (automatic)</string>
-    <string name="map_location">Select from map</string>
     <string name="temperature_unit">Temperature Unit</string>
     <string name="choose_temperature_unit">Select preferred temperature unit</string>
     <string name="celsius">Celsius (°C)</string>
@@ -73,5 +67,33 @@
     <string name="thunderstorm">Thunderstorm</string>
     <string name="snow">Snow</string>
     <string name="mist">Mist</string>
+    <string name="country_eg">Egypt</string>
+    <string name="country_sa">Saudi Arabia</string>
+    <string name="country_ae">United Arab Emirates</string>
+    <string name="country_us">United States</string>
+    <string name="country_gb">United Kingdom</string>
+    <string name="country_fr">France</string>
+    <string name="country_de">Germany</string>
+    <string name="country_it">Italy</string>
+    <string name="country_es">Spain</string>
+    <string name="country_ca">Canada</string>
+    <string name="country_au">Australia</string>
+    <string name="country_jp">Japan</string>
+    <string name="country_kr">South Korea</string>
+    <string name="country_cn">China</string>
+    <string name="country_in">India</string>
+    <string name="country_ru">Russia</string>
+    <string name="country_br">Brazil</string>
+    <string name="country_mx">Mexico</string>
+    <string name="home">Home</string>
+    <string name="favorite">Favorite</string>
+    <string name="menu">Menu</string>
+    <string name="open_street_map">OpenStreetMap</string>
+    <string name="select_location">Select Location</string>
+    <string name="location_selected">Location selected: </string>
+    <string name="back">Back</string>
+    <string name="confirm">Confirm</string>
+    <string name="map_location">Select from Map</string>
+    <string name="favorite_details">Favorite Details</string>
 
 </resources>

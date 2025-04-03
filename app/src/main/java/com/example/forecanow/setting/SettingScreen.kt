@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavController
 import com.example.forecanow.db.WeatherDatabase
 import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
 import com.example.forecanow.network.RetrofitHelper
@@ -58,7 +60,7 @@ fun SettingsScreen(
             )
         )
     ),
-    onNavigateToMap: () -> Unit = {}
+    navController: NavController,
 ) {
     val context = LocalContext.current
     val settings by viewModel.settings.collectAsState()
@@ -85,7 +87,14 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            item { LocationPreferenceSection(settings, viewModel, onNavigateToMap) }
+            item {  LocationPreferenceSection(
+                settings = settings,
+                viewModel = viewModel,
+                onNavigateToOpenStreetMap = {
+                    navController.navigate("map")
+                }
+            )
+            }
             item { UnitsPreferenceSection(settings, viewModel) }
             item { LanguagePreferenceSection(settings, viewModel, context) }
         }
@@ -136,7 +145,7 @@ private fun LocationPreference(
                     Text(
                         text = when(source) {
                             LocationSource.GPS -> stringResource(R.string.gps_location)
-                            LocationSource.MAP -> stringResource(R.string.map_location)
+                            LocationSource.OPEN_STREET_MAP -> stringResource(R.string.map_location)
                         },
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -280,18 +289,25 @@ private fun LanguagePreference(
 private fun LocationPreferenceSection(
     settings: AppSettings,
     viewModel: SettingsViewModel,
-    onNavigateToMap: () -> Unit
+    onNavigateToOpenStreetMap: () -> Unit
 ) {
     SettingsCategory(title = stringResource(R.string.location_settings))
     LocationPreference(
         currentSource = settings.locationSource,
         onSourceSelected = { source ->
-            if (source == LocationSource.MAP) {
-                onNavigateToMap()
-            }
             viewModel.updateSettings(settings.copy(locationSource = source))
         }
     )
+    if (settings.locationSource == LocationSource.OPEN_STREET_MAP) {
+        Button(
+            onClick = onNavigateToOpenStreetMap,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(stringResource(R.string.select_location))
+        }
+    }
 }
 
 @Composable

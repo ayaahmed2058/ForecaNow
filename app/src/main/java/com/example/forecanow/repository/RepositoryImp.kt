@@ -74,6 +74,7 @@ class RepositoryImp private constructor(
         }
     }
 
+
     companion object{
         @Volatile
         private var INSTANCE: RepositoryImp? = null

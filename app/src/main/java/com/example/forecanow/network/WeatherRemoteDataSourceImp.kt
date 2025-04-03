@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
-class WeatherRemoteDataSourceImp(private val service: WeatherApiService): WeatherRemoteDataSourceInterface {
+class WeatherRemoteDataSourceImp(private val service: WeatherApiService ): WeatherRemoteDataSourceInterface {
 
     override suspend fun getCurrentWeather(
         lat: Double,

@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.forecanow.LocationManager
+import com.example.forecanow.utils.LocationManager
 import com.example.forecanow.alarm.model.WeatherAlert
 import com.example.forecanow.repository.RepositoryImp
 import com.google.android.gms.location.LocationServices

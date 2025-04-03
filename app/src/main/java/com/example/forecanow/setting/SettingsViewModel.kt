@@ -54,30 +54,6 @@ class SettingsViewModel(private val repository: RepositoryInterface) : ViewModel
     }
 
 
-    fun updateTemperatureUnit(unit: TemperatureUnit) {
-        viewModelScope.launch {
-            try {
-                val newSettings = _settings.value.copy(temperatureUnit = unit)
-                _settings.value = newSettings
-                repository.saveSettings(newSettings)
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error saving temperature unit", e)
-            }
-        }
-    }
-
-    fun updateWindSpeedUnit(unit: WindSpeedUnit) {
-        viewModelScope.launch {
-            try {
-                val newSettings = _settings.value.copy(windSpeedUnit = unit)
-                _settings.value = newSettings
-                repository.saveSettings(newSettings)
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error saving wind speed unit", e)
-            }
-        }
-    }
-
     fun updateLanguage(language: AppLanguage) {
         viewModelScope.launch {
             try {
