@@ -1,16 +1,20 @@
 package com.example.forecanow.home.viewModel
 
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecanow.model.Response
 import com.example.forecanow.model.ForecastResultResponse
+import com.example.forecanow.pojo.LocationData
+import com.example.forecanow.pojo.LocationEntity
 import com.example.forecanow.repository.RepositoryImp
 import com.example.forecanow.repository.RepositoryInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -33,7 +37,7 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
     val forecast = mutableForecast.asStateFlow()
 
     private val _manualLocation = MutableStateFlow<GeoPoint?>(null)
-    val manualLocation = _manualLocation.asStateFlow()
+    val manualLocation: StateFlow<GeoPoint?> = _manualLocation.asStateFlow()
 
     fun getCurrentWeather(lat: Double, lon: Double, units: String = "metric") {
         viewModelScope.launch {
@@ -80,6 +84,10 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
         _manualLocation.value = location
     }
 
+    private val _selectedLocation = MutableStateFlow<LocationData?>(null)
+    val selectedLocation: StateFlow<LocationData?> = _selectedLocation.asStateFlow()
+
+
 
     suspend fun getCityName(lat: Double, lon: Double): String {
         return try {
@@ -89,6 +97,31 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
             "Unknown Location"
         }
     }
+
+
+    fun setSelectedLocation(lat: Double, lon: Double, name: String) {
+        _selectedLocation.value = LocationData(lat, lon, name)
+        getCurrentWeather(lat, lon)
+        getHourlyForecast(lat, lon)
+    }
+
+
+//    val selectedLocation = settingsViewModel.settings.map {
+//        it.selectedLatitude?.let { lat ->
+//            it.selectedLongitude?.let { lon ->
+//                GeoPoint(lat, lon)
+//            }
+//        }
+//    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+//
+//    LaunchedEffect(selectedLocation) {
+//        selectedLocation?.let {
+//            fetchWeather(it.latitude, it.longitude)
+//        }
+//    }
+
+
+
 
 
 //    fun getHourlyForecast(lat: Double, lon: Double) {

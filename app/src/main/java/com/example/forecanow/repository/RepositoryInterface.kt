@@ -4,6 +4,8 @@ package com.example.forecanow.repository
 import com.example.forecanow.alarm.model.WeatherAlert
 import com.example.forecanow.db.FavoriteLocation
 import com.example.forecanow.pojo.ForecastResponse
+import com.example.forecanow.pojo.LocationData
+import com.example.forecanow.pojo.LocationEntity
 import com.example.forecanow.pojo.WeatherResponse
 import com.example.forecanow.setting.AppSettings
 import kotlinx.coroutines.flow.Flow
@@ -27,5 +29,6 @@ interface RepositoryInterface {
 
     suspend fun saveSettings(settings: AppSettings)
     suspend fun getSettings(): AppSettings?
+
 
 }

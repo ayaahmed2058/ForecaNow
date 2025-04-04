@@ -5,7 +5,10 @@ data class AppSettings(
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val windSpeedUnit: WindSpeedUnit = WindSpeedUnit.METERS_PER_SECOND,
     val language: AppLanguage = AppLanguage.ENGLISH,
-    val locationSource: LocationSource = LocationSource.GPS
+    val locationSource: LocationSource = LocationSource.GPS,
+    val selectedLatitude: Double = 0.0,
+    val selectedLongitude: Double = 0.0,
+    val selectedLocationName: String = ""
 )
 
 enum class TemperatureUnit {

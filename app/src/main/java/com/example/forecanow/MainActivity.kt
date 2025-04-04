@@ -23,6 +23,7 @@ import com.example.forecanow.favorite.FavoriteDetailsScreen
 import com.example.forecanow.favorite.FavoriteScreen
 import com.example.forecanow.map.MapScreen
 import com.example.forecanow.home.view.HomeScreen
+import com.example.forecanow.map.MapMode
 import com.example.forecanow.setting.SettingsScreen
 import com.example.forecanow.utils.LocalizationHelper
 import kotlinx.coroutines.launch
@@ -129,9 +130,17 @@ fun MainScreen() {
                     SettingsScreen(navController = navController)
                 }
 
-                composable("map") { backStackEntry ->
+                composable("map/settings") {
                     MapScreen(
-                        navController = navController
+                        navController = navController,
+                        mode = MapMode.SETTINGS_LOCATION
+                    )
+                }
+
+                composable("map/favorites") {
+                    MapScreen(
+                        navController = navController,
+                        mode = MapMode.FAVORITE_LOCATION
                     )
                 }
 

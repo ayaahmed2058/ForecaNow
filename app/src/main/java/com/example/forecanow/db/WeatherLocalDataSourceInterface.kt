@@ -2,6 +2,8 @@ package com.example.forecanow.db
 
 
 import com.example.forecanow.alarm.model.WeatherAlert
+import com.example.forecanow.pojo.LocationData
+import com.example.forecanow.pojo.LocationEntity
 import com.example.forecanow.setting.AppSettings
 import kotlinx.coroutines.flow.Flow
 
@@ -27,5 +29,6 @@ interface WeatherLocalDataSourceInterface {
 
     suspend fun saveSettings(settings: AppSettings)
     suspend fun getSettings(): AppSettings?
+
 
 }

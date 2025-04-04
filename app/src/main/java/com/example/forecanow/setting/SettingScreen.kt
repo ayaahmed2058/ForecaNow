@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.forecanow.db.WeatherDatabase
 import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
 import com.example.forecanow.network.RetrofitHelper
@@ -60,7 +61,7 @@ fun SettingsScreen(
             )
         )
     ),
-    navController: NavController,
+    navController: NavController
 ) {
     val context = LocalContext.current
     val settings by viewModel.settings.collectAsState()
@@ -87,13 +88,14 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            item {  LocationPreferenceSection(
-                settings = settings,
-                viewModel = viewModel,
-                onNavigateToOpenStreetMap = {
-                    navController.navigate("map")
-                }
-            )
+            item { 
+                LocationPreferenceSection(
+                    settings = settings,
+                    viewModel = viewModel,
+                    onNavigateToOpenStreetMap = {
+                        navController.navigate("map/settings")
+                    }
+                )
             }
             item { UnitsPreferenceSection(settings, viewModel) }
             item { LanguagePreferenceSection(settings, viewModel, context) }
@@ -309,6 +311,7 @@ private fun LocationPreferenceSection(
         }
     }
 }
+
 
 @Composable
 private fun UnitsPreferenceSection(

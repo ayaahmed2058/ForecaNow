@@ -35,18 +35,24 @@ import com.example.forecanow.db.WeatherDatabase
 import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
 import com.example.forecanow.favorite.viewModel.FavoriteViewModel
 import com.example.forecanow.favorite.viewModel.FavoriteViewModelFactory
+import com.example.forecanow.home.viewModel.HomeViewModel
+import com.example.forecanow.home.viewModel.HomeViewModelFactory
 import com.example.forecanow.network.RetrofitHelper
 import com.example.forecanow.network.WeatherRemoteDataSourceImp
+import com.example.forecanow.pojo.LocationData
+import com.example.forecanow.pojo.LocationEntity
 import com.example.forecanow.repository.RepositoryImp
+import com.example.forecanow.setting.LocationSource
+import com.example.forecanow.setting.SettingsViewModel
+import com.example.forecanow.setting.SettingsViewModelFactory
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.first
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
 fun MapScreen(
     navController: NavController,
+    mode: MapMode = MapMode.FAVORITE_LOCATION,
     viewModel: FavoriteViewModel = viewModel(
         factory = FavoriteViewModelFactory(
             RepositoryImp.getInstance(
@@ -56,12 +62,66 @@ fun MapScreen(
                 )
             )
         )
+    ),
+    settingsViewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModelFactory(
+            RepositoryImp.getInstance(
+                WeatherRemoteDataSourceImp(RetrofitHelper.api),
+                WeatherLocalDataSourceInterfaceImp(
+                    WeatherDatabase.getDatabase(LocalContext.current).weatherDao()
+                )
+            )
+        )
+    ),
+    homeViewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(
+            RepositoryImp.getInstance(
+                WeatherRemoteDataSourceImp(RetrofitHelper.api),
+                WeatherLocalDataSourceInterfaceImp(
+                    WeatherDatabase.getDatabase(LocalContext.current).weatherDao()
+                )
+            )
+        )
     )
 ) {
-
-    var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
     var cityName by remember { mutableStateOf("") }
     var showConfirmationDialog by remember { mutableStateOf(false) }
+    var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
+
+    fun onConfirm() {
+        selectedLocation?.let { latLng ->
+            when(mode) {
+                MapMode.FAVORITE_LOCATION -> {
+                    viewModel.addFavorite(
+                        FavoriteLocation(
+                            name = cityName,
+                            country = "",
+                            lat = latLng.latitude,
+                            lon = latLng.longitude
+                        )
+                    )
+                    navController.previousBackStackEntry?.savedStateHandle?.set(
+                        "favorites_updated",
+                        true
+                    )
+                }
+                MapMode.SETTINGS_LOCATION -> {
+                    val locationData = LocationData(
+                        lat = latLng.latitude,
+                        lon = latLng.longitude,
+                        name = cityName
+                    )
+                    navController.previousBackStackEntry?.savedStateHandle?.set(
+                        "selected_location_data",
+                        locationData
+                    )
+                    settingsViewModel.updateLocationSource(LocationSource.OPEN_STREET_MAP)
+                }
+            }
+            navController.popBackStack()
+        }
+
+}
 
     LaunchedEffect(selectedLocation) {
         selectedLocation?.let { latLng ->
@@ -134,17 +194,7 @@ fun MapScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        selectedLocation?.let { latLng ->
-                            viewModel.addFavorite(
-                                FavoriteLocation(
-                                    name = cityName,
-                                    country = "",
-                                    lat = latLng.latitude,
-                                    lon = latLng.longitude
-                                )
-                            )
-                            navController.popBackStack()
-                        }
+                        onConfirm()
                         showConfirmationDialog = false
                     }
                 ) {
@@ -161,3 +211,5 @@ fun MapScreen(
         )
     }
 }
+
+

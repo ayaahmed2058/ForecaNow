@@ -125,6 +125,9 @@ class WeatherAlertWorker(
     }
 
     private fun createNotificationChannel(context: Context) {
+        val soundUri =
+            Uri.parse("android.resource://" + context.packageName + "/" + R.raw.backgroundmusic)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "weather_alerts",
@@ -134,8 +137,10 @@ class WeatherAlertWorker(
                 description = "Weather alert notifications"
                 enableVibration(true)
                 setSound(
-                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
-                    AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()
+                    soundUri,
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build()
                 )
             }
             val notificationManager = context.getSystemService(NotificationManager::class.java)

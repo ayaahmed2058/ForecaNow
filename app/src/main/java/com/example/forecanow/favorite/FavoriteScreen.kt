@@ -63,7 +63,7 @@ fun FavoriteScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("map") },
+                onClick = { navController.navigate("map/favorites") },
                 containerColor = Color(0xFF6200EE)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Favorite", tint = Color.White)

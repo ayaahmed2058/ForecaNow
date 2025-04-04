@@ -6,8 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecanow.repository.RepositoryInterface
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
@@ -66,17 +68,39 @@ class SettingsViewModel(private val repository: RepositoryInterface) : ViewModel
         }
     }
 
+    private val _manualSelectedLocation = MutableStateFlow<LatLng?>(null)
+    val manualSelectedLocation = _manualSelectedLocation.asStateFlow()
+
+    fun updateSelectedLocation(lat: Double, lon: Double, name: String) {
+        viewModelScope.launch {
+            try {
+                val newSettings = _settings.value.copy(
+                    selectedLatitude = lat,
+                    selectedLongitude = lon,
+                    selectedLocationName = name
+                )
+                _settings.value = newSettings
+                repository.saveSettings(newSettings)
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Error saving selected location", e)
+            }
+        }
+    }
+
     fun updateLocationSource(source: LocationSource) {
         viewModelScope.launch {
             try {
                 val newSettings = _settings.value.copy(locationSource = source)
                 _settings.value = newSettings
                 repository.saveSettings(newSettings)
+
+                Log.d("SettingsVM", "Updated location source to: $source")
             } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error saving location source", e)
+                Log.e("SettingsVM", "Error updating location source", e)
             }
         }
     }
+
 }
 
 class SettingsViewModelFactory(private val repo: RepositoryInterface) : ViewModelProvider.Factory {

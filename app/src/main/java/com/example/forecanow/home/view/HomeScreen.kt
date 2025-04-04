@@ -5,11 +5,9 @@ import android.location.Location
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -18,8 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -48,12 +44,38 @@ import com.example.forecanow.setting.*
 import com.example.forecanow.utils.LocalizationHelper
 import com.example.forecanow.utils.LocationManager
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.LatLng
-import org.osmdroid.util.GeoPoint
 import java.text.SimpleDateFormat
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import com.example.forecanow.pojo.LocationEntity
+import java.util.Date
+import java.util.Locale
+import androidx.compose.runtime.setValue
+import com.example.forecanow.pojo.LocationData
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.delay
 import java.util.*
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,21 +103,17 @@ fun HomeScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
-    val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    val locationHelper = remember { LocationManager(context, fusedLocationProviderClient) }
+    val locationHelper = remember {
+        LocationManager(context, LocationServices.getFusedLocationProviderClient(context))
+    }
     val settings by settingsViewModel.settings.collectAsState()
 
 
-    val manualLocation by viewModel.manualLocation.collectAsState()
-
-
-    val apiUnits by remember(settings.temperatureUnit) {
-        derivedStateOf {
-            when(settings.temperatureUnit) {
-                TemperatureUnit.CELSIUS -> "metric"
-                TemperatureUnit.FAHRENHEIT -> "imperial"
-                TemperatureUnit.KELVIN -> "standard"
-            }
+    val apiUnits = remember(settings.temperatureUnit) {
+        when (settings.temperatureUnit) {
+            TemperatureUnit.CELSIUS -> "metric"
+            TemperatureUnit.FAHRENHEIT -> "imperial"
+            TemperatureUnit.KELVIN -> "standard"
         }
     }
 
@@ -104,59 +122,50 @@ fun HomeScreen(
         viewModel.getHourlyForecast(lat, lon, apiUnits)
     }
 
-    val selectedLocationLiveData = remember {
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getLiveData<LatLng?>("selected_location")
+    LaunchedEffect(Unit) {
+        settingsViewModel.loadInitialSettings()
+    }
+
+
+
+    var isManualUpdate by remember { mutableStateOf(false) }
+
+    val locationData = navController.previousBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<LocationData>("selected_location_data")
+        ?.observeAsState()
+
+    LaunchedEffect(locationData) {
+        locationData?.value?.let { data ->
+            isManualUpdate = true
+            viewModel.setSelectedLocation(data.lat, data.lon, data.name)
+            settingsViewModel.updateSelectedLocation(data.lat, data.lon, data.name)
+            fetchWeather(data.lat, data.lon)
+
+            navController.previousBackStackEntry?.savedStateHandle?.remove<LocationData>("selected_location_data")
+            delay(1000)
+            isManualUpdate = false
+        }
     }
 
 
     LaunchedEffect(settings.locationSource) {
-        when (settings.locationSource) {
-            LocationSource.GPS -> {
-                fetchLocationAndWeather(locationHelper, { location ->
-                    fetchWeather(location.latitude, location.longitude)
-                }, context)
-            }
-            LocationSource.OPEN_STREET_MAP -> {
-                manualLocation?.let {
-                    fetchWeather(it.latitude, it.longitude)
+        if (!isManualUpdate) {
+            when (settings.locationSource) {
+                LocationSource.GPS -> {
+                    fetchLocationAndWeather(locationHelper, { location ->
+                        if (!isManualUpdate) {
+                            viewModel.setSelectedLocation(location.latitude, location.longitude, "Current Location")
+                            fetchWeather(location.latitude, location.longitude)
+                        }
+                    }, context)
+                }
+                LocationSource.OPEN_STREET_MAP -> {
+                    if (!isManualUpdate && settings.selectedLatitude != 0.0) {
+                        fetchWeather(settings.selectedLatitude, settings.selectedLongitude)
+                    }
                 }
             }
-        }
-    }
-
-
-    var forceRefresh by remember { mutableStateOf(false) }
-    val selectedLocation by selectedLocationLiveData?.observeAsState() ?: remember { mutableStateOf(null) }
-
-
-    LaunchedEffect(selectedLocation) {
-        selectedLocation?.let { latLng ->
-            val newLocation = GeoPoint(latLng.latitude, latLng.longitude)
-            viewModel.updateManualLocation(newLocation)
-            settingsViewModel.updateLocationSource(LocationSource.OPEN_STREET_MAP)
-            fetchWeather(latLng.latitude, latLng.longitude)
-
-            navController.currentBackStackEntry
-                ?.savedStateHandle
-                ?.remove<LatLng>("selected_location")
-        }
-    }
-
-
-    LaunchedEffect(Unit) {
-        settingsViewModel.loadInitialSettings()
-        if (settings.locationSource == LocationSource.GPS) {
-            fetchLocationAndWeather(locationHelper, { location ->
-                fetchWeather(location.latitude, location.longitude)
-            }, context)
-        }
-    }
-
-    LaunchedEffect(manualLocation) {
-        manualLocation?.let { location ->
-            fetchWeather(location.latitude, location.longitude)
         }
     }
 

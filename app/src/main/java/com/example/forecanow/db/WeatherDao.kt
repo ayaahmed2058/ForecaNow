@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.forecanow.alarm.model.WeatherAlert
+import com.example.forecanow.pojo.LocationEntity
 import com.example.forecanow.setting.SettingsEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -41,4 +42,6 @@ interface WeatherDao {
 
     @Query("SELECT * FROM settings LIMIT 1")
     suspend fun getSettings(): SettingsEntity?
+
+
 }
