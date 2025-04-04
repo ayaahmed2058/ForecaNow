@@ -44,6 +44,14 @@ class RepositoryImp private constructor(
         return weatherLocalDataSource.insertFavorite(favorite)
     }
 
+    override suspend fun deleteAlertById(alertId: Int){
+        return weatherLocalDataSource.deleteAlertById(alertId)
+    }
+
+    override suspend fun markAlertAsInactive(alertId: Int){
+        return weatherLocalDataSource.markAlertAsInactive(alertId)
+    }
+
     override suspend fun deleteFavorite(favorite: FavoriteLocation) {
         return weatherLocalDataSource.deleteFavorite(favorite)
     }

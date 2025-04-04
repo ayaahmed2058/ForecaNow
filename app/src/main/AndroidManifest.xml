@@ -25,13 +25,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ForecaNow"
         android:usesCleartextTraffic="true"
-        tools:targetApi="31">
+        tools:targetApi="31"
+       >
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup" />
+        </provider>
+
 
         <uses-library android:name="org.apache.http.legacy" android:required="false"/>
-
-
-        <receiver android:name=".alarm.AlertReceiver" />
-
 
         <activity
             android:name=".MainActivity"

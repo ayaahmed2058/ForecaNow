@@ -23,6 +23,15 @@ class WeatherLocalDataSourceInterfaceImp (private val dao: WeatherDao): WeatherL
         return dao.deleteAlert(alert)
     }
 
+    override suspend fun deleteAlertById(alertId: Int){
+        return dao.deleteAlertById(alertId)
+    }
+
+    override suspend fun markAlertAsInactive(alertId: Int){
+        return dao.markAlertAsInactive(alertId)
+    }
+
+
     override suspend fun insertFavorite(favorite: FavoriteLocation) {
         return dao.insertFavorite(favorite)
     }

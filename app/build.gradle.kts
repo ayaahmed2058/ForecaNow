@@ -96,4 +96,10 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    //workmanager
+    implementation ("androidx.work:work-runtime-ktx:2.8.1")
+
+
+    implementation ("androidx.compose.material3:material3:1.1.2")
+
 }

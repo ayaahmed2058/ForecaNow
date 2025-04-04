@@ -13,6 +13,8 @@ interface WeatherLocalDataSourceInterface {
 
     suspend fun deleteAlert(alert: WeatherAlert)
 
+    suspend fun deleteAlertById(alertId: Int)
+    suspend fun markAlertAsInactive(alertId: Int)
 
     suspend fun insertFavorite(favorite: FavoriteLocation)
 

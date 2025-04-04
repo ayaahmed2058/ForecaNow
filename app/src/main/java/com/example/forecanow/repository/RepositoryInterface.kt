@@ -17,7 +17,8 @@ interface RepositoryInterface {
     suspend fun getAllAlerts(): Flow<List<WeatherAlert>>
     suspend fun insertAlert(alert: WeatherAlert)
     suspend fun deleteAlert(alert: WeatherAlert)
-
+    suspend fun deleteAlertById(alertId: Int)
+    suspend fun markAlertAsInactive(alertId: Int)
 
     suspend fun insertFavorite(favorite: FavoriteLocation)
     suspend fun deleteFavorite(favorite: FavoriteLocation)

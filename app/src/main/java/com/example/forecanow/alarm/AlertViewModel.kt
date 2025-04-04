@@ -1,21 +1,25 @@
 package com.example.forecanow.alarm
 
-import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.widget.Toast
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import android.content.Context
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.example.forecanow.utils.LocationManager
 import com.example.forecanow.alarm.model.WeatherAlert
 import com.example.forecanow.repository.RepositoryImp
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+
 
 class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
     private val _alerts = MutableStateFlow<List<WeatherAlert>>(emptyList())
@@ -23,9 +27,10 @@ class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
 
     init {
         getAllAlerts()
+        startPeriodicAlertCheck()
     }
 
-    fun getAllAlerts(){
+    private fun getAllAlerts() {
         viewModelScope.launch {
             repository.getAllAlerts().collect { alertsList ->
                 _alerts.value = alertsList
@@ -42,10 +47,12 @@ class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
                     val newAlert = WeatherAlert(
                         startTime = startTime,
                         endTime = endTime,
-                        alertType = alertType
+                        alertType = alertType,
+                        locationLat = location.latitude,
+                        locationLon = location.longitude
                     )
                     repository.insertAlert(newAlert)
-                    scheduleAlert(context, startTime, alertType, location.latitude, location.longitude)
+                    scheduleAlert(context, newAlert)
                 }
             },
             onFailure = { error ->
@@ -54,40 +61,87 @@ class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
         )
     }
 
+    private fun scheduleAlert(context: Context, alert: WeatherAlert) {
+        val currentTime = System.currentTimeMillis()
 
-    @SuppressLint("ScheduleExactAlarm")
-    private fun scheduleAlert(context: Context, timeInMillis: Long, alertType: String, lat: Double, lon: Double) {
-        val intent = Intent(context, AlertReceiver::class.java).apply {
-            putExtra("alertType", alertType)
-            putExtra("latitude", lat)
-            putExtra("longitude", lon)
+        if (alert.startTime <= currentTime) {
+            Toast.makeText(context, "Alert time must be in the future", Toast.LENGTH_SHORT).show()
+            return
         }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            timeInMillis.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+
+        val inputData = workDataOf(
+            "alert_id" to alert.id,
+            "alert_type" to alert.alertType,
+            "latitude" to alert.locationLat,
+            "longitude" to alert.locationLon
         )
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
+
+        val request = OneTimeWorkRequestBuilder<WeatherAlertWorker>()
+            .setInputData(inputData)
+            .setInitialDelay(alert.startTime - currentTime, TimeUnit.MILLISECONDS)
+            .addTag("weather_alert_${alert.id}")
+            .build()
+
+        WorkManager.getInstance(context).enqueue(request)
     }
 
-    private fun cancelAlarm(context: Context, timeInMillis: Long) {
-        val intent = Intent(context, AlertReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            timeInMillis.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    private fun scheduleOneTimeAlert(context: Context, alert: WeatherAlert) {
+        val delay = alert.startTime - System.currentTimeMillis()
+
+        val inputData = workDataOf(
+            "alert_id" to alert.id,
+            "alert_type" to alert.alertType,
+            "latitude" to alert.locationLat,
+            "longitude" to alert.locationLon
         )
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.cancel(pendingIntent)
+
+        val request = OneTimeWorkRequestBuilder<WeatherAlertWorker>()
+            .setInputData(inputData)
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(request)
+    }
+
+    private fun triggerAlertImmediately(context: Context, alert: WeatherAlert) {
+        val inputData = workDataOf(
+            "alert_id" to alert.id,
+            "alert_type" to alert.alertType,
+            "latitude" to alert.locationLat,
+            "longitude" to alert.locationLon
+        )
+
+        val request = OneTimeWorkRequestBuilder<WeatherAlertWorker>()
+            .setInputData(inputData)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(request)
+    }
+
+    private fun startPeriodicAlertCheck() {
+        viewModelScope.launch {
+            while (true) {
+                delay(15 * 60 * 1000)
+                checkActiveAlerts()
+            }
+        }
+    }
+
+    private fun checkActiveAlerts() {
+        viewModelScope.launch {
+            val currentTime = System.currentTimeMillis()
+            val activeAlerts = _alerts.value.filter {
+                it.isActive && it.startTime <= currentTime && it.endTime >= currentTime
+            }
+
+            activeAlerts.forEach { alert ->
+            }
+        }
     }
 
     fun removeAlert(alert: WeatherAlert, context: Context) {
         viewModelScope.launch {
             repository.deleteAlert(alert)
-            cancelAlarm(context, alert.startTime)
         }
     }
 }

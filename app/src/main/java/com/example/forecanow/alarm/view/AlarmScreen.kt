@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -22,6 +21,36 @@ import android.app.DatePickerDialog
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TimePicker
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import java.util.Date
+import java.util.Locale
+import android.widget.Toast
+import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import com.example.forecanow.alarm.AlarmViewModelFactory
 import com.example.forecanow.alarm.AlertViewModel
 import com.example.forecanow.alarm.model.WeatherAlert
@@ -31,8 +60,6 @@ import com.example.forecanow.network.RetrofitHelper
 import com.example.forecanow.network.WeatherRemoteDataSourceImp
 import com.example.forecanow.repository.RepositoryImp
 import java.text.SimpleDateFormat
-import java.util.*
-
 
 @Composable
 fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFactory(
@@ -73,94 +100,129 @@ fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFa
 
 @Composable
 fun AlertInputDialog(onDismiss: () -> Unit, onConfirm: (Long, Long, String) -> Unit) {
-    var type by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf(System.currentTimeMillis()) }
     var endTime by remember { mutableStateOf(System.currentTimeMillis() + 3600000) }
-
-    val alertTypeDefault = stringResource(R.string.notification)
-    var alertType by remember { mutableStateOf(alertTypeDefault) }
+    var alertType by remember { mutableStateOf("Notification") }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.add_weather_alert)) },
+        title = { Text("Add Weather Alert") },
         text = {
             Column {
-                OutlinedTextField(
-                    value = type,
-                    onValueChange = { type = it },
-                    label = { Text(stringResource(R.string.alert_type)) }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                DateTimePicker("Start Time", startTime) { startTime = it }
+                DateTimePicker("End Time", endTime) { endTime = it }
 
-                DatePickerButton(stringResource(R.string.select_start_time)) { time -> startTime = time }
-                DatePickerButton(stringResource(R.string.select_end_time)) { time -> endTime = time }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Text(stringResource(R.string.choose_alert_method))
-                Row {
+                Text("Alert Type:")
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
-                        selected = alertType == stringResource(R.string.notification),
-                        onClick = { alertType ="Notification" }
+                        selected = alertType == "Notification",
+                        onClick = { alertType = "Notification" }
                     )
-                    Text(stringResource(R.string.notification))
-
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Text("Notification", modifier = Modifier.padding(end = 16.dp))
 
                     RadioButton(
-                        selected = alertType == stringResource(R.string.alarm),
+                        selected = alertType == "Alarm",
                         onClick = { alertType = "Alarm" }
                     )
-                    Text(stringResource(R.string.alarm))
+                    Text("Alarm Sound")
                 }
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(startTime, endTime, alertType) }) {
-                Text(stringResource(R.string.add))
+            Button(onClick = {
+                if (endTime > startTime) {
+                    onConfirm(startTime, endTime, alertType)
+                } else {
+                    Toast.makeText(context, "End time must be after start time", Toast.LENGTH_SHORT).show()
+                }
+            }) {
+                Text("Add Alert")
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerButton(label: String, onTimeSelected: (Long) -> Unit) {
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
+fun DateTimePicker(label: String, initialTime: Long, onTimeSelected: (Long) -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedTime by remember { mutableStateOf(initialTime) }
 
-    Button(onClick = {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                calendar.set(Calendar.YEAR, year)
-                calendar.set(Calendar.MONTH, month)
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+    val calendar = remember { Calendar.getInstance().apply { timeInMillis = initialTime } }
+    val dateFormatter = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
+    val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
 
-                TimePickerDialog(
-                    context,
-                    { _, hourOfDay, minute ->
-                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                        calendar.set(Calendar.MINUTE, minute)
+    Column {
+        Text(label, style = MaterialTheme.typography.labelMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = dateFormatter.format(Date(selectedTime)),
+                modifier = Modifier
+                    .clickable { showDialog = true }
+                    .padding(8.dp)
+            )
+            Text(
+                text = timeFormatter.format(Date(selectedTime)),
+                modifier = Modifier
+                    .clickable { showDialog = true }
+                    .padding(8.dp)
+            )
+        }
+    }
 
-                        onTimeSelected(calendar.timeInMillis)
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    false
-                ).show()
+    if (showDialog) {
+        val dateState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedTime,
+            initialDisplayMode = DisplayMode.Picker
+        )
+
+        val timeState = rememberTimePickerState(
+            initialHour = calendar.get(Calendar.HOUR_OF_DAY),
+            initialMinute = calendar.get(Calendar.MINUTE)
+        )
+
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Select $label") },
+            text = {
+                Column {
+                    DatePicker(
+                        state = dateState,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    TimePicker(
+                        state = timeState,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }) {
-        Text(label)
+            confirmButton = {
+                Button(onClick = {
+                    val newCalendar = Calendar.getInstance().apply {
+                        timeInMillis = dateState.selectedDateMillis ?: selectedTime
+                        set(Calendar.HOUR_OF_DAY, timeState.hour)
+                        set(Calendar.MINUTE, timeState.minute)
+                    }
+                    selectedTime = newCalendar.timeInMillis
+                    onTimeSelected(selectedTime)
+                    showDialog = false
+                }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
+
 
 @Composable
 fun AlertItem(alert: WeatherAlert, onDelete: () -> Unit) {
@@ -171,23 +233,70 @@ fun AlertItem(alert: WeatherAlert, onDelete: () -> Unit) {
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column {
-                Text(text = stringResource(R.string.from, formatTimestamp(alert.startTime)))
-                Text(text = stringResource(R.string.to, formatTimestamp(alert.endTime)))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = formatTime(alert.startTime),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = formatTime(alert.endTime),
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_alert))
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = formatDate(alert.startTime),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = formatDate(alert.endTime),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = alert.alertType,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete Alert",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
 }
 
-fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+private fun formatTime(timestamp: Long): String {
+    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
+
+private fun formatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("dd MMM.yyyy", Locale.getDefault())
+    return sdf.format(Date(timestamp))
+}
+
