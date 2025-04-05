@@ -1,7 +1,6 @@
 package com.example.forecanow.alarm.view
 
 
-import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.*
@@ -11,13 +10,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.Alignment
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.platform.LocalContext
 import java.util.Calendar
-import android.app.DatePickerDialog
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
@@ -51,25 +48,34 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
-import com.example.forecanow.alarm.AlarmViewModelFactory
-import com.example.forecanow.alarm.AlertViewModel
-import com.example.forecanow.alarm.model.WeatherAlert
-import com.example.forecanow.db.WeatherDatabase
-import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
-import com.example.forecanow.network.RetrofitHelper
-import com.example.forecanow.network.WeatherRemoteDataSourceImp
-import com.example.forecanow.repository.RepositoryImp
+import com.example.forecanow.alarm.viewModel.AlarmViewModelFactory
+import com.example.forecanow.alarm.viewModel.AlertViewModel
+import com.example.forecanow.data.db.WeatherAlert
+import com.example.forecanow.data.db.WeatherDatabase
+import com.example.forecanow.data.db.WeatherLocalDataSourceImp
+import com.example.forecanow.data.network.RetrofitHelper
+import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
+import com.example.forecanow.data.repository.RepositoryImp
 import java.text.SimpleDateFormat
+import androidx.compose.foundation.lazy.items
+
 
 @Composable
 fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFactory(
     RepositoryImp.getInstance(WeatherRemoteDataSourceImp(RetrofitHelper.api),
-        WeatherLocalDataSourceInterfaceImp(WeatherDatabase.getDatabase(LocalContext.current).weatherDao()))
+        WeatherLocalDataSourceImp(WeatherDatabase.getDatabase(LocalContext.current).weatherDao()))
 ))) {
 
     val alerts by viewModel.alerts.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.message.collect{
+                message -> Toast.makeText(context,message,Toast.LENGTH_LONG).show()
+        }
+    }
+
 
     Scaffold(
         floatingActionButton = {
@@ -107,7 +113,7 @@ fun AlertInputDialog(onDismiss: () -> Unit, onConfirm: (Long, Long, String) -> U
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Weather Alert") },
+        title = { Text(stringResource(R.string.add_weather_alert)) },
         text = {
             Column {
                 DateTimePicker("Start Time", startTime) { startTime = it }

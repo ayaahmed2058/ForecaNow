@@ -1,14 +1,30 @@
-package com.example.forecanow.home.view
+package com.example.forecanow.favorite.view
 
-import android.content.Context
-import android.location.Location
-import android.util.Log
-import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.example.forecanow.R
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.forecanow.home.viewModel.HomeViewModel
+import com.example.forecanow.home.viewModel.HomeViewModelFactory
+import com.example.forecanow.data.Response
+import com.example.forecanow.data.network.RetrofitHelper
+import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
+import com.example.forecanow.data.repository.RepositoryImp
+import com.example.forecanow.setting.viewModel.SettingsViewModel
+import com.example.forecanow.setting.viewModel.SettingsViewModelFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -16,80 +32,41 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.forecanow.R
-import com.example.forecanow.home.viewModel.HomeViewModel
-import com.example.forecanow.home.viewModel.HomeViewModelFactory
+import com.example.forecanow.home.view.DailyForecastItem
+import com.example.forecanow.home.view.HourlyForecastItem
+import com.example.forecanow.home.view.WeatherDetailCard
+import com.example.forecanow.home.view.WeatherIcon
+import com.example.forecanow.home.view.extractDailyForecast
 import com.example.forecanow.data.ForecastResultResponse
-import com.example.forecanow.data.Response
-import com.example.forecanow.data.network.RetrofitHelper
-import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
-import com.example.forecanow.pojo.HourlyWeather
-import com.example.forecanow.data.repository.RepositoryImp
-import com.example.forecanow.utils.LocalizationHelper
-import com.example.forecanow.utils.LocationManager
-import com.google.android.gms.location.LocationServices
-import java.text.SimpleDateFormat
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import java.util.Date
-import java.util.Locale
-import androidx.compose.runtime.setValue
+import com.example.forecanow.data.db.FavoriteLocation
 import com.example.forecanow.data.db.WeatherDatabase
 import com.example.forecanow.data.db.WeatherLocalDataSourceImp
-import com.example.forecanow.pojo.LocationData
-import com.example.forecanow.pojo.LocationSource
 import com.example.forecanow.pojo.TemperatureUnit
-import com.example.forecanow.setting.viewModel.SettingsViewModel
-import com.example.forecanow.setting.viewModel.SettingsViewModelFactory
-import com.example.forecanow.utils.Format.formatDate
 import com.example.forecanow.utils.Format.formatTime
+import com.example.forecanow.utils.LocalizationHelper
 import com.example.forecanow.utils.LocalizationHelper.getArabicWeatherDescription
-import com.example.forecanow.utils.MapImage.Companion.getWeatherIconRes
 import com.example.forecanow.utils.Units.Companion.convertWindSpeed
 import com.example.forecanow.utils.Units.Companion.getCountryName
 import com.example.forecanow.utils.Units.Companion.getPressureUnit
 import com.example.forecanow.utils.Units.Companion.getTemperatureUnitSymbol
 import com.example.forecanow.utils.Units.Companion.getWindSpeedUnitSymbol
-import com.example.forecanow.utils.checkdays.isSameDay
-import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
 import java.util.*
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+
+fun FavoriteDetailsScreen(
+    favoriteId: Int,
+    onBackClick: () -> Unit,
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(
             RepositoryImp.getInstance(
@@ -109,85 +86,54 @@ fun HomeScreen(
                 )
             )
         )
-    ),
-    navController: NavController
+    )
 ) {
     val context = LocalContext.current
-    val locationHelper = remember {
-        LocationManager(context, LocationServices.getFusedLocationProviderClient(context))
-    }
+    var favorite by remember { mutableStateOf<FavoriteLocation?>(null) }
     val settings by settingsViewModel.settings.collectAsState()
 
 
-    val apiUnits = remember(settings.temperatureUnit) {
-        when (settings.temperatureUnit) {
-            TemperatureUnit.CELSIUS -> "metric"
-            TemperatureUnit.FAHRENHEIT -> "imperial"
-            TemperatureUnit.KELVIN -> "standard"
-        }
-    }
-
-    fun fetchWeather(lat: Double, lon: Double) {
-        viewModel.getCurrentWeather(lat, lon, apiUnits)
-        viewModel.getHourlyForecast(lat, lon, apiUnits)
-    }
-
-    LaunchedEffect(Unit) {
-        settingsViewModel.loadInitialSettings()
+    LaunchedEffect(favoriteId) {
+        favorite = viewModel.repository.getFavoriteById(favoriteId)
     }
 
 
-
-    var isManualUpdate by remember { mutableStateOf(false) }
-
-    val locationData = navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.getLiveData<LocationData>("selected_location_data")
-        ?.observeAsState()
-
-    LaunchedEffect(locationData) {
-        locationData?.value?.let { data ->
-            isManualUpdate = true
-            viewModel.setSelectedLocation(data.lat, data.lon, data.name)
-            settingsViewModel.updateSelectedLocation(data.lat, data.lon, data.name)
-            fetchWeather(data.lat, data.lon)
-
-            navController.previousBackStackEntry?.savedStateHandle?.remove<LocationData>("selected_location_data")
-            delay(1000)
-            isManualUpdate = false
-        }
-    }
-
-
-    LaunchedEffect(settings.locationSource) {
-        if (!isManualUpdate) {
-            when (settings.locationSource) {
-                LocationSource.GPS -> {
-                    fetchLocationAndWeather(locationHelper, { location ->
-                        if (!isManualUpdate) {
-                            viewModel.setSelectedLocation(location.latitude, location.longitude, "Current Location")
-                            fetchWeather(location.latitude, location.longitude)
-                        }
-                    }, context)
-                }
-                LocationSource.OPEN_STREET_MAP -> {
-                    if (!isManualUpdate && settings.selectedLatitude != 0.0) {
-                        fetchWeather(settings.selectedLatitude, settings.selectedLongitude)
-                    }
-                }
+    val apiUnits by remember(settings.temperatureUnit) {
+        derivedStateOf {
+            when(settings.temperatureUnit) {
+                TemperatureUnit.CELSIUS -> "metric"
+                TemperatureUnit.FAHRENHEIT -> "imperial"
+                TemperatureUnit.KELVIN -> "standard"
             }
         }
     }
 
 
+    LaunchedEffect(favorite, apiUnits) {
+        favorite?.let {
+            viewModel.getCurrentWeather(it.lat, it.lon, apiUnits)
+            viewModel.getHourlyForecast(it.lat, it.lon, apiUnits)
+        }
+    }
+
     val weatherState by viewModel.weather.collectAsState()
     val forecastState by viewModel.forecast.collectAsState()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Favorite Details") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
         containerColor = Color(0xFFF5F7FA)
     ) { padding ->
-        when (weatherState) {
-            is Response.Loading -> {
+        when {
+            favorite == null -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -197,8 +143,17 @@ fun HomeScreen(
                     CircularProgressIndicator()
                 }
             }
-
-            is Response.Success -> {
+            weatherState is Response.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            weatherState is Response.Success -> {
                 val weatherData = (weatherState as Response.Success).data
                 val temp = weatherData.main.temp.toInt()
                 val humidity = weatherData.main.humidity
@@ -208,10 +163,9 @@ fun HomeScreen(
                 val pressure = weatherData.main.pressure
                 val feelsLike = weatherData.main.feels_like
                 val description = weatherData.weather.firstOrNull()?.description ?: "N/A"
-                val iconCode = weatherData.weather.first()?.icon ?: "01d"
+                val iconCode = weatherData.weather.firstOrNull()?.icon ?: "01d"
                 val cloud = weatherData.clouds.all
 
-                Log.i("TAG", "https://openweathermap.org/img/wn/${iconCode}@4x.png")
 
                 val temperatureUnitSymbol = getTemperatureUnitSymbol(settings.temperatureUnit)
                 val windSpeedUnitSymbol = getWindSpeedUnitSymbol(settings.windSpeedUnit)
@@ -267,7 +221,7 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Text(
-                                        text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnitSymbol",context),
+                                        text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnitSymbol", context),
                                         style = MaterialTheme.typography.displayMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF2D3748)
@@ -336,6 +290,7 @@ fun HomeScreen(
                                     color = Color(0xFF9F7AEA)
                                 )
                             }
+
                             item {
                                 WeatherDetailCard(
                                     icon = R.drawable.weather,
@@ -350,7 +305,7 @@ fun HomeScreen(
                                 WeatherDetailCard(
                                     icon = R.drawable.water_lux,
                                     title = stringResource(R.string.sunrise),
-                                    value = formatTime(sunrise,context),
+                                    value = formatTime(sunrise, context),
                                     unit = "",
                                     color = Color(0xFFED8936)
                                 )
@@ -360,12 +315,11 @@ fun HomeScreen(
                                 WeatherDetailCard(
                                     icon = R.drawable.wb_twilight,
                                     title = stringResource(R.string.sunset),
-                                    value = formatTime(sunset,context),
+                                    value = formatTime(sunset, context),
                                     unit = "",
                                     color = Color(0xFF667EEA)
                                 )
                             }
-
                         }
                     }
 
@@ -393,18 +347,15 @@ fun HomeScreen(
                                     }
                                 }
                             }
-
                             is ForecastResultResponse.Failure -> {
                                 Text(
                                     text = "Error: ${(forecastState as ForecastResultResponse.Failure).error.message}",
                                     color = Color.Red
                                 )
                             }
-
                             ForecastResultResponse.Loading -> {
                                 CircularProgressIndicator()
                             }
-
                             else -> {}
                         }
                     }
@@ -433,25 +384,21 @@ fun HomeScreen(
                                     }
                                 }
                             }
-
                             is ForecastResultResponse.Failure -> {
                                 Text(
                                     text = stringResource(R.string.error_loading_hourly_forecast),
                                     color = Color.Red
                                 )
                             }
-
                             ForecastResultResponse.Loading -> {
                                 CircularProgressIndicator()
                             }
-
                             else -> {}
                         }
                     }
                 }
             }
-
-            is Response.Failure -> {
+            weatherState is Response.Failure -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -477,12 +424,10 @@ fun HomeScreen(
 
                         Button(
                             onClick = {
-                                locationHelper.getFreshLocation(
-                                    onSuccess = { location ->  fetchWeather(location.latitude, location.longitude) },
-                                    onFailure = { error ->
-                                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                                    }
-                                )
+                                favorite?.let {
+                                    viewModel.getCurrentWeather(it.lat, it.lon, apiUnits)
+                                    viewModel.getHourlyForecast(it.lat, it.lon, apiUnits)
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF4299E1)
@@ -498,189 +443,4 @@ fun HomeScreen(
 }
 
 
-@Composable
-fun WeatherDetailCard(
-    icon: Int,
-    title: String,
-    value: String,
-    unit: String,
-    color: Color
-) {
-    val context = LocalContext.current
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = title,
-                tint = color
-            )
-            Text(text = title, style = MaterialTheme.typography.bodySmall)
-            Text(
-                text = LocalizationHelper.convertToArabicNumbers("$value$unit",context),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
 
-@Composable
-fun HourlyForecastItem(item: HourlyWeather, temperatureUnit: String) {
-    val context = LocalContext.current
-    val time = formatTime(item.dt, context)
-    val temperature = item.main.temp.toInt()
-    val icon = item.weather.firstOrNull()?.icon ?: "01d"
-
-    Card(
-        modifier = Modifier.width(80.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = time,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF718096)
-            )
-
-            WeatherIcon(
-                iconCode = icon,
-                modifier = Modifier.size(40.dp)
-            )
-
-            Text(
-                text = LocalizationHelper.convertToArabicNumbers("$temperature$temperatureUnit",context),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2D3748)
-            )
-        }
-    }
-}
-
-@Composable
-fun DailyForecastItem(item: HourlyWeather, temperatureUnit: String) {
-    val context = LocalContext.current
-    val date = formatDate(item.dt, context)
-    val temp = item.main.temp.toInt()
-    val icon = item.weather.firstOrNull()?.icon ?: "01d"
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = date,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF2D3748),
-                modifier = Modifier.weight(1f)
-            )
-
-            WeatherIcon(
-                iconCode = icon,
-                modifier = Modifier.size(40.dp)
-            )
-
-            Text(
-                text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnit", context),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2D3748)
-            )
-        }
-    }
-}
-
-private fun fetchLocationAndWeather(
-    locationHelper: LocationManager,
-    onSuccess: (Location) -> Unit,
-    context: Context
-) {
-    if (locationHelper.checkPermissions()) {
-        if (locationHelper.isLocationEnabled()) {
-            locationHelper.getFreshLocation(
-                onSuccess = onSuccess,
-                onFailure = { error ->
-                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                }
-            )
-        } else {
-            Toast.makeText(
-                context,
-                context.getString(R.string.turn_on_location_services),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    } else {
-        Toast.makeText(
-            context,
-            context.getString(R.string.location_permissions_not_granted),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-}
-
-
- fun extractDailyForecast(hourlyList: List<HourlyWeather>, context: Context): List<HourlyWeather> {
-    val calendar = Calendar.getInstance()
-    val currentDate = calendar.time
-
-    return hourlyList
-        .filter { item ->
-            val itemDate = Date(item.dt * 1000)
-            !isSameDay(currentDate, itemDate)
-        }
-        .groupBy { item ->
-            if (LocalizationHelper.isArabicLanguage(context)) {
-                SimpleDateFormat("yyyy-MM-dd", Locale("ar"))
-                    .format(Date(item.dt * 1000))
-            } else {
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    .format(Date(item.dt * 1000))
-            }
-        }
-        .map { (_, items) ->
-            items.maxByOrNull { it.main.temp } ?: items.first()
-        }
-        .sortedBy { it.dt }
-        .take(5)
-}
-
-
-
-@Composable
-fun WeatherIcon(
-    iconCode: String,
-    modifier: Modifier = Modifier
-) {
-    val iconRes = remember(iconCode) { getWeatherIconRes(iconCode) }
-
-    Icon(
-        painter = painterResource(id = iconRes),
-        contentDescription = "Weather icon",
-        modifier = modifier,
-        tint = Color.Unspecified
-    )
-}

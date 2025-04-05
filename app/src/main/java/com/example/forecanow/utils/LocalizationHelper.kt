@@ -4,6 +4,9 @@ import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import com.example.forecanow.R
+import java.util.Locale
 
 object LocalizationHelper {
     private val arabicNumbers = listOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
@@ -32,4 +35,21 @@ object LocalizationHelper {
         }
         return locale.language == "ar"
     }
+
+    @Composable
+    fun getArabicWeatherDescription(description: String): String {
+        return when (description.lowercase(Locale.getDefault())) {
+            "clear sky" -> stringResource(R.string.clear_sky)
+            "few clouds" -> stringResource(R.string.few_clouds)
+            "scattered clouds" -> stringResource(R.string.scattered_clouds)
+            "broken clouds" -> stringResource(R.string.broken_clouds)
+            "shower rain" -> stringResource(R.string.shower_rain)
+            "rain" -> stringResource(R.string.rain)
+            "thunderstorm" -> stringResource(R.string.thunderstorm)
+            "snow" -> stringResource(R.string.snow)
+            "mist" -> stringResource(R.string.mist)
+            else -> description
+        }
+    }
+
 }

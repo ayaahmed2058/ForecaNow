@@ -1,16 +1,14 @@
 package com.example.forecanow.home.viewModel
 
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.forecanow.model.Response
-import com.example.forecanow.model.ForecastResultResponse
+import com.example.forecanow.data.Response
+import com.example.forecanow.data.ForecastResultResponse
 import com.example.forecanow.pojo.LocationData
-import com.example.forecanow.pojo.LocationEntity
-import com.example.forecanow.repository.RepositoryImp
-import com.example.forecanow.repository.RepositoryInterface
+import com.example.forecanow.data.repository.RepositoryImp
+import com.example.forecanow.data.repository.RepositoryInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

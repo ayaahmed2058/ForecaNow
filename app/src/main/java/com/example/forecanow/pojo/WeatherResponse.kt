@@ -6,7 +6,8 @@ data class WeatherResponse(
     val main: Main,
     val wind: Wind,
     val sys: Sys,
-    val name: String
+    val name: String,
+    val clouds: Clouds
 )
 
 data class Coord(

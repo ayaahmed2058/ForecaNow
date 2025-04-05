@@ -30,21 +30,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.forecanow.db.FavoriteLocation
-import com.example.forecanow.db.WeatherDatabase
-import com.example.forecanow.db.WeatherLocalDataSourceInterfaceImp
+import com.example.forecanow.data.db.FavoriteLocation
+import com.example.forecanow.data.db.WeatherDatabase
+import com.example.forecanow.data.db.WeatherLocalDataSourceImp
 import com.example.forecanow.favorite.viewModel.FavoriteViewModel
 import com.example.forecanow.favorite.viewModel.FavoriteViewModelFactory
 import com.example.forecanow.home.viewModel.HomeViewModel
 import com.example.forecanow.home.viewModel.HomeViewModelFactory
-import com.example.forecanow.network.RetrofitHelper
-import com.example.forecanow.network.WeatherRemoteDataSourceImp
+import com.example.forecanow.data.network.RetrofitHelper
+import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
 import com.example.forecanow.pojo.LocationData
-import com.example.forecanow.pojo.LocationEntity
-import com.example.forecanow.repository.RepositoryImp
-import com.example.forecanow.setting.LocationSource
-import com.example.forecanow.setting.SettingsViewModel
-import com.example.forecanow.setting.SettingsViewModelFactory
+import com.example.forecanow.data.repository.RepositoryImp
+import com.example.forecanow.pojo.LocationSource
+import com.example.forecanow.setting.viewModel.SettingsViewModel
+import com.example.forecanow.setting.viewModel.SettingsViewModelFactory
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.first
 
@@ -57,7 +56,7 @@ fun MapScreen(
         factory = FavoriteViewModelFactory(
             RepositoryImp.getInstance(
                 WeatherRemoteDataSourceImp(RetrofitHelper.api),
-                WeatherLocalDataSourceInterfaceImp(
+                WeatherLocalDataSourceImp(
                     WeatherDatabase.getDatabase(LocalContext.current).weatherDao()
                 )
             )
@@ -67,7 +66,7 @@ fun MapScreen(
         factory = SettingsViewModelFactory(
             RepositoryImp.getInstance(
                 WeatherRemoteDataSourceImp(RetrofitHelper.api),
-                WeatherLocalDataSourceInterfaceImp(
+                WeatherLocalDataSourceImp(
                     WeatherDatabase.getDatabase(LocalContext.current).weatherDao()
                 )
             )
@@ -77,7 +76,7 @@ fun MapScreen(
         factory = HomeViewModelFactory(
             RepositoryImp.getInstance(
                 WeatherRemoteDataSourceImp(RetrofitHelper.api),
-                WeatherLocalDataSourceInterfaceImp(
+                WeatherLocalDataSourceImp(
                     WeatherDatabase.getDatabase(LocalContext.current).weatherDao()
                 )
             )

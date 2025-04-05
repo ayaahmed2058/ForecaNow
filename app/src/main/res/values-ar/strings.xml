@@ -32,9 +32,9 @@
     <string name="location_permissions_not_granted">لم يتم منح أذونات الموقع</string>
     <string name="title_activity_map">نشاط الخريطة</string>
     <string name="wind_speed">سرعة الرياح</string>
-    <string name="hourly_forecast">توقعات كل ساعة</string>
+    <string name="hourly_forecast">توقعات باقي الساعات</string>
     <string name="error_loading_hourly_forecast">خطأ في تحميل التوقعات لكل ساعة</string>
-    <string name="_5_day_forecast">توقعات 5 أيام</string>
+    <string name="_5_day_forecast">التوقعات اليوميه</string>
     <string name="retry">إعادة المحاولة</string>
     <string name="location_settings">الموقع</string>
     <string name="unit_settings">الوحدات</string>
@@ -95,4 +95,5 @@
     <string name="confirm">تأكيد</string>
     <string name="map_location">اختر من الخريطة</string>
     <string name="favorite_details">التفاصيل المفضله</string>
+    <string name="cloud">السحب</string>
 </resources>

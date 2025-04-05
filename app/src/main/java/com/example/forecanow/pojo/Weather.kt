@@ -26,4 +26,7 @@ data class Sys(
     val sunrise: Long,
     val sunset: Long
 )
+data class Clouds (
+    var all: Int
+)
 

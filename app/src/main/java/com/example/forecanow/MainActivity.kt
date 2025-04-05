@@ -19,12 +19,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.forecanow.alarm.view.AlertScreen
-import com.example.forecanow.favorite.FavoriteDetailsScreen
-import com.example.forecanow.favorite.FavoriteScreen
+import com.example.forecanow.favorite.view.FavoriteDetailsScreen
+import com.example.forecanow.favorite.view.FavoriteScreen
 import com.example.forecanow.map.MapScreen
 import com.example.forecanow.home.view.HomeScreen
 import com.example.forecanow.map.MapMode
-import com.example.forecanow.setting.SettingsScreen
+import com.example.forecanow.setting.view.SettingsScreen
 import com.example.forecanow.utils.LocalizationHelper
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
