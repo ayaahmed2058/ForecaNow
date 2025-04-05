@@ -36,9 +36,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.forecanow.home.view.DailyForecastItem
 import com.example.forecanow.home.view.HourlyForecastItem
 import com.example.forecanow.home.view.WeatherDetailCard
@@ -57,6 +59,7 @@ import com.example.forecanow.utils.Units.Companion.getCountryName
 import com.example.forecanow.utils.Units.Companion.getPressureUnit
 import com.example.forecanow.utils.Units.Companion.getTemperatureUnitSymbol
 import com.example.forecanow.utils.Units.Companion.getWindSpeedUnitSymbol
+import com.example.forecanow.utils.customFontFamily
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -66,7 +69,6 @@ import java.util.*
 
 fun FavoriteDetailsScreen(
     favoriteId: Int,
-    onBackClick: () -> Unit,
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(
             RepositoryImp.getInstance(
@@ -120,16 +122,6 @@ fun FavoriteDetailsScreen(
     val forecastState by viewModel.forecast.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Favorite Details") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
         containerColor = Color(0xFFF5F7FA)
     ) { padding ->
         when {
@@ -175,7 +167,7 @@ fun FavoriteDetailsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .background(Color(0xFFF5F7FA)),
+                        .background(colorResource(R.color.bgColor)),
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     item {
@@ -189,8 +181,9 @@ fun FavoriteDetailsScreen(
                                     "${weatherData.name}, ${weatherData.sys.country}"
                                 },
                                 style = MaterialTheme.typography.headlineMedium,
-                                color = Color(0xFF2D3748),
-                                fontWeight = FontWeight.Bold
+                                color = colorResource(R.color.teal_700),
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.ExtraLight
                             )
 
                             Text(
@@ -200,7 +193,7 @@ fun FavoriteDetailsScreen(
                                     SimpleDateFormat("EEEE, dd MMMM yyyy - hh:mm a", Locale.getDefault()).format(Date())
                                 },
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF718096)
+                                color = colorResource(R.color.dateColor)
                             )
                         }
 
@@ -208,8 +201,13 @@ fun FavoriteDetailsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            shape = RoundedCornerShape(
+                                topStart = 20.dp,
+                                topEnd = 20.dp,
+                                bottomEnd = 60.dp,
+                                bottomStart = 20.dp
+                            ),
+                            colors = CardDefaults.cardColors(colorResource(R.color.teal_200)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -223,8 +221,10 @@ fun FavoriteDetailsScreen(
                                     Text(
                                         text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnitSymbol", context),
                                         style = MaterialTheme.typography.displayMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2D3748)
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 56.sp,
+                                        color = colorResource(R.color.countryColor)
                                     )
 
                                     WeatherIcon(
@@ -240,14 +240,18 @@ fun FavoriteDetailsScreen(
                                         description.replaceFirstChar { it.titlecase() }
                                     },
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = Color(0xFF4A5568),
-                                    modifier = Modifier.padding(top = 8.dp)
+                                    color = colorResource(R.color.cloudColor),
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
 
                                 Text(
                                     text = "${stringResource(R.string.feels_like_c)} ${feelsLike.toInt()}${temperatureUnitSymbol}",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF718096)
+                                    color = colorResource(R.color.white),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
                         }
@@ -267,7 +271,7 @@ fun FavoriteDetailsScreen(
                                     title = stringResource(R.string.humidity),
                                     value = "$humidity",
                                     unit = "%",
-                                    color = Color(0xFF4299E1)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -277,7 +281,7 @@ fun FavoriteDetailsScreen(
                                     title = stringResource(R.string.wind_speed),
                                     value = windSpeed.toString(),
                                     unit = windSpeedUnitSymbol,
-                                    color = Color(0xFF38B2AC)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -287,7 +291,7 @@ fun FavoriteDetailsScreen(
                                     title = stringResource(R.string.pressure),
                                     value = pressure.toString(),
                                     unit = pressureUnit,
-                                    color = Color(0xFF9F7AEA)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -297,7 +301,7 @@ fun FavoriteDetailsScreen(
                                     title = stringResource(R.string.cloud),
                                     value = cloud.toString(),
                                     unit = "%",
-                                    color = Color(0xFF9F7AEA)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -307,7 +311,7 @@ fun FavoriteDetailsScreen(
                                     title = stringResource(R.string.sunrise),
                                     value = formatTime(sunrise, context),
                                     unit = "",
-                                    color = Color(0xFFED8936)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -317,7 +321,7 @@ fun FavoriteDetailsScreen(
                                     title = stringResource(R.string.sunset),
                                     value = formatTime(sunset, context),
                                     unit = "",
-                                    color = Color(0xFF667EEA)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
                         }
@@ -327,8 +331,9 @@ fun FavoriteDetailsScreen(
                         Text(
                             text = stringResource(R.string.hourly_forecast),
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF2D3748),
-                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.teal_700),
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
@@ -350,7 +355,10 @@ fun FavoriteDetailsScreen(
                             is ForecastResultResponse.Failure -> {
                                 Text(
                                     text = "Error: ${(forecastState as ForecastResultResponse.Failure).error.message}",
-                                    color = Color.Red
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
                             ForecastResultResponse.Loading -> {
@@ -364,8 +372,9 @@ fun FavoriteDetailsScreen(
                         Text(
                             text = stringResource(R.string._5_day_forecast),
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF2D3748),
-                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.teal_700),
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
@@ -387,7 +396,10 @@ fun FavoriteDetailsScreen(
                             is ForecastResultResponse.Failure -> {
                                 Text(
                                     text = stringResource(R.string.error_loading_hourly_forecast),
-                                    color = Color.Red
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
                             ForecastResultResponse.Loading -> {
@@ -418,8 +430,9 @@ fun FavoriteDetailsScreen(
 
                         Text(
                             text = "Error: ${(weatherState as Response.Failure).error.message}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Red
+                            color = Color.Red,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal
                         )
 
                         Button(
@@ -430,7 +443,7 @@ fun FavoriteDetailsScreen(
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF4299E1)
+                                containerColor = colorResource(R.color.teal_700)
                             )
                         ) {
                             Text(stringResource(R.string.retry))

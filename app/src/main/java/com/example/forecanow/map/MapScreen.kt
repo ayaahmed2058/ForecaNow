@@ -71,16 +71,6 @@ fun MapScreen(
                 )
             )
         )
-    ),
-    homeViewModel: HomeViewModel = viewModel(
-        factory = HomeViewModelFactory(
-            RepositoryImp.getInstance(
-                WeatherRemoteDataSourceImp(RetrofitHelper.api),
-                WeatherLocalDataSourceImp(
-                    WeatherDatabase.getDatabase(LocalContext.current).weatherDao()
-                )
-            )
-        )
     )
 ) {
     var cityName by remember { mutableStateOf("") }

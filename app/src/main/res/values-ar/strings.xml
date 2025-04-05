@@ -103,5 +103,22 @@
     <string name="enable_location">تفعيل الموقع</string>
     <string name="please_enable_location">يرجى تفعيل خدمات الموقع لاستخدام التطبيق.</string>
     <string name="enable">تفعيل</string>
+    <string name="add_favorite">إضافة إلى المفضلة</string>
+    <string name="no_favorites">لا توجد مفضلات</string>
+    <string name="no_favorite_locations_added_yet">لم يتم إضافة مواقع مفضلة بعد</string>
+    <string name="delete">حذف</string>
+    <string name="are_you_sure">هل أنت متأكد؟</string>
+    <string name="do_you_want_to_delete_this_location_from_favorites">هل تريد حذف هذا الموقع من المفضلة؟</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    <string name="start_time">وقت البدء</string>
+    <string name="end_time">وقت الانتهاء</string>
+    <string name="end_time_must_be_after_start_time">يجب أن يكون وقت الانتهاء بعد وقت البدء</string>
+    <string name="select">حدد %1$s</string>
+    <string name="ok">موافق</string>
+    <string name="are_you_sure_delete_alert">هل أنت متأكد أنك تريد حذف هذا التنبيه؟</string>
+    <string name="no_alerts">لا توجد تنبيهات</string>
+    <string name="no_alert_added_yet">لم يتم إضافة أي تنبيه بعد</string>
+
 
 </resources>

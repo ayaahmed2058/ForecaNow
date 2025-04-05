@@ -37,6 +37,22 @@ class WeatherLocalDataSourceImp (private val dao: WeatherDao): WeatherLocalDataS
         return dao.insertFavorite(favorite)
     }
 
+    override suspend fun insertWeather(weather: WeatherEntity) {
+        return dao.insertWeather(weather)
+    }
+
+    override suspend fun insertHourlyForecast(forecasts: List<HourlyForecastEntity>) {
+        return dao.insertHourlyForecast(forecasts)
+    }
+
+    override suspend fun getWeather(city: String): WeatherEntity? {
+        return dao.getWeather(city)
+    }
+
+    override suspend fun getHourlyForecast(city: String): List<HourlyForecastEntity> {
+        return dao.getHourlyForecast(city)
+    }
+
     override suspend fun deleteFavorite(favorite: FavoriteLocation): Int {
         if(favorite != null)
         return dao.deleteFavorite(favorite)

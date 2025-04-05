@@ -568,7 +568,7 @@ fun HomeScreen(
                                 )
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF4299E1)
+                                containerColor = colorResource(R.color.teal_700)
                             )
                         ) {
                             Text(stringResource(R.string.retry))

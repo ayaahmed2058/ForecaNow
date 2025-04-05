@@ -19,6 +19,19 @@ interface WeatherDao {
     @Query("DELETE FROM weather_alerts WHERE id = :alertId")
     suspend fun deleteAlertById(alertId: Int)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWeather(weather: WeatherEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHourlyForecast(forecasts: List<HourlyForecastEntity>)
+
+    @Query("SELECT * FROM weather WHERE cityName = :city")
+    suspend fun getWeather(city: String): WeatherEntity?
+
+    @Query("SELECT * FROM hourly_forecast WHERE cityName = :city ORDER BY dt ASC")
+    suspend fun getHourlyForecast(city: String): List<HourlyForecastEntity>
+
+
     @Query("UPDATE weather_alerts SET isActive = 0 WHERE id = :alertId")
     suspend fun markAlertAsInactive(alertId: Int)
 
@@ -39,6 +52,4 @@ interface WeatherDao {
 
     @Query("SELECT * FROM settings LIMIT 1")
     suspend fun getSettings(): SettingsEntity?
-
-
 }

@@ -1,5 +1,6 @@
 package com.example.forecanow
 
+import android.R.attr.shadowColor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.FloatingActionButtonDefaults.elevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -85,8 +87,7 @@ fun MainScreen() {
             ModalDrawerSheet {
                 Text(
                     text = stringResource(R.string.menu),
-                    modifier = Modifier.padding(16.dp)
-                        .background(colorResource(R.color.teal_700)),
+                    modifier = Modifier.padding(16.dp),
                     fontSize = 20.sp,
                     fontFamily = customFontFamily,
                     fontWeight = FontWeight.ExtraLight
@@ -119,7 +120,20 @@ fun MainScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.app_name)) },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            color = Color.White,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.ExtraLight,
+                            fontSize = 20.sp
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(R.color.teal_200),
+                        navigationIconContentColor = Color.White,
+                        titleContentColor = Color.White
+                    ),
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(
@@ -129,8 +143,10 @@ fun MainScreen() {
                                 tint = iconColor
                             )
                         }
-                    }
+                    },
+
                 )
+
             }
         ) { paddingValues ->
             NavHost(
@@ -167,8 +183,7 @@ fun MainScreen() {
                     val favoriteId = backStackEntry.arguments?.getString("favoriteId")?.toIntOrNull()
                     favoriteId?.let { id ->
                         FavoriteDetailsScreen(
-                            favoriteId = id,
-                            onBackClick = { navController.popBackStack() }
+                            favoriteId = id
                         )
                     }
                 }

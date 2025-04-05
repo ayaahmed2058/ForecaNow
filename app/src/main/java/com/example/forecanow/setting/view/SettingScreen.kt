@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
+import androidx.compose.foundation.background
 import java.util.Locale
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.colorResource
 import androidx.navigation.NavController
 import com.example.forecanow.data.db.WeatherDatabase
 import com.example.forecanow.data.db.WeatherLocalDataSourceImp
@@ -76,17 +78,7 @@ fun SettingsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.settings)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        }
-    ) { padding ->
+    Scaffold { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,7 +106,7 @@ private fun SettingsCategory(title: String) {
         text = title,
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp),
-        color = MaterialTheme.colorScheme.primary
+        color = colorResource(R.color.teal_700)
     )
 }
 
@@ -127,6 +119,9 @@ private fun LocationPreference(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.teal_200)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -170,6 +165,9 @@ private fun TemperatureUnitPreference(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.teal_200)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -214,6 +212,9 @@ private fun WindSpeedUnitPreference(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.teal_200)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -257,6 +258,9 @@ private fun LanguagePreference(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.teal_200)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {

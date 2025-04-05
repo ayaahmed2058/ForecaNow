@@ -17,6 +17,15 @@ interface WeatherLocalDataSourceInterface {
 
     suspend fun insertFavorite(favorite: FavoriteLocation):Long
 
+    suspend fun insertWeather(weather: WeatherEntity)
+
+    suspend fun insertHourlyForecast(forecasts: List<HourlyForecastEntity>)
+
+    suspend fun getWeather(city: String): WeatherEntity?
+
+    suspend fun getHourlyForecast(city: String): List<HourlyForecastEntity>
+
+
 
     suspend fun deleteFavorite(favorite: FavoriteLocation):Int
 

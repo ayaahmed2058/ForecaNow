@@ -25,9 +25,6 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
     private val mutableWeather =  MutableStateFlow<Response>(Response.Loading)
     val weather = mutableWeather.asStateFlow()
 
-//    private val mutableForecast: MutableLiveData<ForecastResultResponse> = MutableLiveData()
-//    val forecast: LiveData<ForecastResultResponse> = mutableForecast
-
     private val mutableMessage =  MutableSharedFlow<String>()
     val message= mutableMessage.asSharedFlow()
 
@@ -78,23 +75,9 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
         }
     }
 
-    fun updateManualLocation(location: GeoPoint) {
-        _manualLocation.value = location
-    }
 
     private val _selectedLocation = MutableStateFlow<LocationData?>(null)
     val selectedLocation: StateFlow<LocationData?> = _selectedLocation.asStateFlow()
-
-
-
-    suspend fun getCityName(lat: Double, lon: Double): String {
-        return try {
-            val response = repository.getWeather(lat, lon, "metric").first()
-            response.name
-        } catch (e: Exception) {
-            "Unknown Location"
-        }
-    }
 
 
     fun setSelectedLocation(lat: Double, lon: Double, name: String) {
@@ -102,48 +85,6 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
         getCurrentWeather(lat, lon)
         getHourlyForecast(lat, lon)
     }
-
-
-//    val selectedLocation = settingsViewModel.settings.map {
-//        it.selectedLatitude?.let { lat ->
-//            it.selectedLongitude?.let { lon ->
-//                GeoPoint(lat, lon)
-//            }
-//        }
-//    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
-//
-//    LaunchedEffect(selectedLocation) {
-//        selectedLocation?.let {
-//            fetchWeather(it.latitude, it.longitude)
-//        }
-//    }
-
-
-
-
-
-//    fun getHourlyForecast(lat: Double, lon: Double) {
-//
-//        viewModelScope.launch(Dispatchers.IO) {
-//
-//            try {
-//                val forecastResponse = repository.getHourlyForecast(lat, lon)
-//                forecastResponse
-//                    .catch { ex ->
-//                        mutableForecast.postValue(ForecastResultResponse.Failure(ex))
-//                        mutableMessage.emit("Error From API: ${ex.message}")
-//                    }
-//                    .collect {
-//                        mutableForecast.postValue(ForecastResultResponse.forecastSuccess(it))
-//                    }
-//
-//            } catch (e: Exception) {
-//                mutableForecast.value = ForecastResultResponse.Failure(e)
-//                mutableMessage.emit("an error occurs ${e.message}")
-//            }
-//        }
-//    }
-
 
 }
 

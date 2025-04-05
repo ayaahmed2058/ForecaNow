@@ -33,6 +33,22 @@ class FakeWeatherLocalDataSource(private val alerts: MutableList<WeatherAlert> =
             return 0
     }
 
+    override suspend fun insertWeather(weather: WeatherEntity) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertHourlyForecast(forecasts: List<HourlyForecastEntity>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getWeather(city: String): WeatherEntity? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getHourlyForecast(city: String): List<HourlyForecastEntity> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun deleteFavorite(favorite: FavoriteLocation): Int {
         val isRemoved = favorites.remove(favorite)
         if(isRemoved)

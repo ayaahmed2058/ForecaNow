@@ -58,6 +58,14 @@ import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
 import com.example.forecanow.data.repository.RepositoryImp
 import java.text.SimpleDateFormat
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import com.example.forecanow.utils.customFontFamily
 
 
 @Composable
@@ -67,6 +75,7 @@ fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFa
 ))) {
 
     val alerts by viewModel.alerts.collectAsState()
+
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -79,14 +88,44 @@ fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFa
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_alert))
+            FloatingActionButton(onClick = { showDialog = true },
+                containerColor = colorResource(R.color.teal_700)) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_alert) , tint = Color.White)
             }
         }
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.padding(paddingValues)) {
-            items(alerts) { alert ->
-                AlertItem(alert, onDelete = { viewModel.removeAlert(alert,context) })
+        if (alerts.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = stringResource(R.string.no_alerts),
+                        tint = colorResource(R.color.teal_200),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.no_alert_added_yet),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = colorResource(R.color.teal_200),
+                        fontFamily = customFontFamily,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            }
+        }
+        else {
+            LazyColumn(modifier = Modifier.padding(paddingValues)) {
+                items(alerts) { alert ->
+                    AlertItem(alert, onDelete = { viewModel.removeAlert(alert, context) })
+                }
             }
         }
     }
@@ -116,24 +155,24 @@ fun AlertInputDialog(onDismiss: () -> Unit, onConfirm: (Long, Long, String) -> U
         title = { Text(stringResource(R.string.add_weather_alert)) },
         text = {
             Column {
-                DateTimePicker("Start Time", startTime) { startTime = it }
-                DateTimePicker("End Time", endTime) { endTime = it }
+                DateTimePicker(stringResource(R.string.start_time), startTime) { startTime = it }
+                DateTimePicker(stringResource(R.string.end_time), endTime) { endTime = it }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Alert Type:")
+                Text(stringResource(R.string.alert_type))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = alertType == "Notification",
                         onClick = { alertType = "Notification" }
                     )
-                    Text("Notification", modifier = Modifier.padding(end = 16.dp))
+                    Text(stringResource(R.string.notification), modifier = Modifier.padding(end = 16.dp))
 
                     RadioButton(
                         selected = alertType == "Alarm",
                         onClick = { alertType = "Alarm" }
                     )
-                    Text("Alarm Sound")
+                    Text(stringResource(R.string.alarm))
                 }
             }
         },
@@ -142,15 +181,16 @@ fun AlertInputDialog(onDismiss: () -> Unit, onConfirm: (Long, Long, String) -> U
                 if (endTime > startTime) {
                     onConfirm(startTime, endTime, alertType)
                 } else {
-                    Toast.makeText(context, "End time must be after start time", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,
+                        context.getString(R.string.end_time_must_be_after_start_time), Toast.LENGTH_SHORT).show()
                 }
             }) {
-                Text("Add Alert")
+                Text(stringResource(R.string.add_alert))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -197,7 +237,7 @@ fun DateTimePicker(label: String, initialTime: Long, onTimeSelected: (Long) -> U
 
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Select $label") },
+            title = { Text(stringResource(R.string.select, label)) },
             text = {
                 Column {
                     DatePicker(
@@ -222,7 +262,7 @@ fun DateTimePicker(label: String, initialTime: Long, onTimeSelected: (Long) -> U
                     onTimeSelected(selectedTime)
                     showDialog = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
@@ -232,12 +272,17 @@ fun DateTimePicker(label: String, initialTime: Long, onTimeSelected: (Long) -> U
 
 @Composable
 fun AlertItem(alert: WeatherAlert, onDelete: () -> Unit) {
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.teal_200)
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -264,11 +309,15 @@ fun AlertItem(alert: WeatherAlert, onDelete: () -> Unit) {
             ) {
                 Text(
                     text = formatDate(alert.startTime),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = customFontFamily,
+                    fontWeight = FontWeight.Normal
                 )
                 Text(
                     text = formatDate(alert.endTime),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = customFontFamily,
+                    fontWeight = FontWeight.Normal
                 )
             }
 
@@ -281,19 +330,61 @@ fun AlertItem(alert: WeatherAlert, onDelete: () -> Unit) {
             ) {
                 Text(
                     text = alert.alertType,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = customFontFamily,
+                    fontWeight = FontWeight.Normal
                 )
 
-                IconButton(onClick = onDelete) {
+                IconButton(
+                    onClick = { showDeleteConfirmation = true },
+                    modifier = Modifier.size(48.dp)
+                ) {
                     Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Delete Alert",
-                        tint = MaterialTheme.colorScheme.error
+                        painter = painterResource(R.drawable.cancel_1),
+                        contentDescription = stringResource(R.string.delete),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
         }
     }
+
+    if (showDeleteConfirmation) {
+        DeleteConfirmationDialog(
+            onDismiss = { showDeleteConfirmation = false },
+            onConfirm = {
+                onDelete()
+                showDeleteConfirmation = false
+            }
+        )
+    }
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.delete_alert)) },
+        text = { Text(stringResource(R.string.are_you_sure_delete_alert)) },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(R.color.teal_700)
+                )
+            ) {
+                Text(stringResource(R.string.delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }
 
 private fun formatTime(timestamp: Long): String {
