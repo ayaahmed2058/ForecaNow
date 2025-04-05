@@ -112,4 +112,8 @@ dependencies {
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation ("org.hamcrest:hamcrest-library:2.2")
 
+    //lottie
+    implementation ("com.airbnb.android:lottie-compose:6.4.0")
+
+
 }

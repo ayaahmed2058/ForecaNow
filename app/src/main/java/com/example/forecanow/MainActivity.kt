@@ -3,6 +3,9 @@ package com.example.forecanow
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -10,7 +13,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +32,7 @@ import com.example.forecanow.home.view.HomeScreen
 import com.example.forecanow.map.MapMode
 import com.example.forecanow.setting.view.SettingsScreen
 import com.example.forecanow.utils.LocalizationHelper
+import com.example.forecanow.utils.customFontFamily
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 
@@ -49,7 +56,6 @@ fun MainScreen() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     val items = listOf(
         stringResource(R.string.home),
@@ -65,15 +71,25 @@ fun MainScreen() {
         Icons.Default.Settings
     )
 
+    val rotationState by animateFloatAsState(
+        targetValue = if (drawerState.isOpen) 180f else 0f
+    )
+
+    val iconColor by animateColorAsState(
+        targetValue = if (drawerState.isOpen) colorResource(R.color.teal_700) else Color.Black
+    )
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
                     text = stringResource(R.string.menu),
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp)
+                        .background(colorResource(R.color.teal_700)),
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontFamily = customFontFamily,
+                    fontWeight = FontWeight.ExtraLight
                 )
                 items.forEachIndexed { index, item ->
                     NavigationDrawerItem(
@@ -106,7 +122,12 @@ fun MainScreen() {
                     title = { Text(stringResource(R.string.app_name)) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.menu))
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = stringResource(R.string.menu),
+                                modifier = Modifier.rotate(rotationState),
+                                tint = iconColor
+                            )
                         }
                     }
                 )
@@ -121,9 +142,7 @@ fun MainScreen() {
                     HomeScreen(navController = navController)
                 }
                 composable("favorite") {
-                    FavoriteScreen(
-                        navController = navController
-                    )
+                    FavoriteScreen(navController = navController)
                 }
                 composable("alarm") { AlertScreen() }
                 composable("settings") {

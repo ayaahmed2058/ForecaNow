@@ -1,7 +1,9 @@
 package com.example.forecanow.home.view
 
 import android.content.Context
+import android.content.Intent
 import android.location.Location
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -46,12 +48,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -62,11 +66,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.sp
 import com.example.forecanow.data.db.WeatherDatabase
 import com.example.forecanow.data.db.WeatherLocalDataSourceImp
 import com.example.forecanow.pojo.LocationData
@@ -84,7 +92,9 @@ import com.example.forecanow.utils.Units.Companion.getPressureUnit
 import com.example.forecanow.utils.Units.Companion.getTemperatureUnitSymbol
 import com.example.forecanow.utils.Units.Companion.getWindSpeedUnitSymbol
 import com.example.forecanow.utils.checkdays.isSameDay
+import com.example.forecanow.utils.customFontFamily
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,6 +127,7 @@ fun HomeScreen(
         LocationManager(context, LocationServices.getFusedLocationProviderClient(context))
     }
     val settings by settingsViewModel.settings.collectAsState()
+    var showLocationDialog by remember { mutableStateOf(false) }
 
 
     val apiUnits = remember(settings.temperatureUnit) {
@@ -134,7 +145,13 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         settingsViewModel.loadInitialSettings()
+        if (!locationHelper.isLocationEnabled()) {
+            showLocationDialog = true
+        }
     }
+
+
+
 
 
 
@@ -163,12 +180,22 @@ fun HomeScreen(
         if (!isManualUpdate) {
             when (settings.locationSource) {
                 LocationSource.GPS -> {
-                    fetchLocationAndWeather(locationHelper, { location ->
-                        if (!isManualUpdate) {
-                            viewModel.setSelectedLocation(location.latitude, location.longitude, "Current Location")
-                            fetchWeather(location.latitude, location.longitude)
+                    if (!locationHelper.isLocationEnabled()) {
+                        showLocationDialog = true
+                    } else {
+                        val success = locationHelper.fetchLocationAndWeather(
+                            { location ->
+                                if (!isManualUpdate) {
+                                    viewModel.setSelectedLocation(location.latitude, location.longitude, "Current Location")
+                                    fetchWeather(location.latitude, location.longitude)
+                                }
+                            },
+                            context
+                        )
+                        if (!success) {
+                            showLocationDialog = true
                         }
-                    }, context)
+                    }
                 }
                 LocationSource.OPEN_STREET_MAP -> {
                     if (!isManualUpdate && settings.selectedLatitude != 0.0) {
@@ -182,10 +209,43 @@ fun HomeScreen(
 
     val weatherState by viewModel.weather.collectAsState()
     val forecastState by viewModel.forecast.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    if (showLocationDialog) {
+        AlertDialog(
+            onDismissRequest = { showLocationDialog = false },
+            title = { Text(stringResource(R.string.location_required)) },
+            text = { Text(stringResource(R.string.please_enable_location)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLocationDialog = false
+                        context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+
+                        coroutineScope.launch {
+                            delay(1000)
+                            if (!locationHelper.isLocationEnabled()) {
+                                showLocationDialog = true
+                            }
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.enable))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLocationDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
 
     Scaffold(
-        containerColor = Color(0xFFF5F7FA)
+        containerColor = colorResource(R.color.scaffoldColor),
     ) { padding ->
+
         when (weatherState) {
             is Response.Loading -> {
                 Box(
@@ -221,7 +281,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .background(Color(0xFFF5F7FA)),
+                        .background(colorResource(R.color.bgColor)),
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     item {
@@ -235,8 +295,9 @@ fun HomeScreen(
                                     "${weatherData.name}, ${weatherData.sys.country}"
                                 },
                                 style = MaterialTheme.typography.headlineMedium,
-                                color = Color(0xFF2D3748),
-                                fontWeight = FontWeight.Bold
+                                color = colorResource(R.color.teal_700),
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.ExtraLight
                             )
 
                             Text(
@@ -246,7 +307,7 @@ fun HomeScreen(
                                     SimpleDateFormat("EEEE, dd MMMM yyyy - hh:mm a", Locale.getDefault()).format(Date())
                                 },
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF718096)
+                                color = colorResource(R.color.dateColor),
                             )
                         }
 
@@ -254,8 +315,13 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            shape = RoundedCornerShape(
+                                topStart = 20.dp,
+                                topEnd = 20.dp,
+                                bottomEnd = 60.dp,
+                                bottomStart = 20.dp
+                            ),
+                            colors = CardDefaults.cardColors(colorResource(R.color.teal_200)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -269,13 +335,15 @@ fun HomeScreen(
                                     Text(
                                         text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnitSymbol",context),
                                         style = MaterialTheme.typography.displayMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2D3748)
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 56.sp,
+                                        color = colorResource(R.color.countryColor)
                                     )
 
                                     WeatherIcon(
                                         iconCode = iconCode,
-                                        modifier = Modifier.size(120.dp)
+                                        modifier = Modifier.size(150.dp)
                                     )
                                 }
 
@@ -286,14 +354,18 @@ fun HomeScreen(
                                         description.replaceFirstChar { it.titlecase() }
                                     },
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = Color(0xFF4A5568),
-                                    modifier = Modifier.padding(top = 8.dp)
+                                    color = colorResource(R.color.cloudColor),
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
 
                                 Text(
                                     text = "${stringResource(R.string.feels_like_c)} ${feelsLike.toInt()}${temperatureUnitSymbol}",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF718096)
+                                    color = colorResource(R.color.white),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
                         }
@@ -313,7 +385,7 @@ fun HomeScreen(
                                     title = stringResource(R.string.humidity),
                                     value = "$humidity",
                                     unit = "%",
-                                    color = Color(0xFF4299E1)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -323,7 +395,7 @@ fun HomeScreen(
                                     title = stringResource(R.string.wind_speed),
                                     value = windSpeed.toString(),
                                     unit = windSpeedUnitSymbol,
-                                    color = Color(0xFF38B2AC)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -333,7 +405,7 @@ fun HomeScreen(
                                     title = stringResource(R.string.pressure),
                                     value = pressure.toString(),
                                     unit = pressureUnit,
-                                    color = Color(0xFF9F7AEA)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
                             item {
@@ -342,7 +414,7 @@ fun HomeScreen(
                                     title = stringResource(R.string.cloud),
                                     value = cloud.toString(),
                                     unit = "%",
-                                    color = Color(0xFF9F7AEA)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -352,7 +424,7 @@ fun HomeScreen(
                                     title = stringResource(R.string.sunrise),
                                     value = formatTime(sunrise,context),
                                     unit = "",
-                                    color = Color(0xFFED8936)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -362,7 +434,7 @@ fun HomeScreen(
                                     title = stringResource(R.string.sunset),
                                     value = formatTime(sunset,context),
                                     unit = "",
-                                    color = Color(0xFF667EEA)
+                                    color = colorResource(R.color.teal_200)
                                 )
                             }
 
@@ -373,8 +445,9 @@ fun HomeScreen(
                         Text(
                             text = stringResource(R.string.hourly_forecast),
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF2D3748),
-                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.teal_700),
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
@@ -382,7 +455,7 @@ fun HomeScreen(
                             is ForecastResultResponse.forecastSuccess -> {
                                 val forecastData =
                                     (forecastState as ForecastResultResponse.forecastSuccess).data
-                                val hourlyData = forecastData.list.take(8)
+                                val hourlyData = forecastData.list.take(7)
 
                                 LazyRow(
                                     modifier = Modifier.padding(bottom = 24.dp),
@@ -397,7 +470,10 @@ fun HomeScreen(
                             is ForecastResultResponse.Failure -> {
                                 Text(
                                     text = "Error: ${(forecastState as ForecastResultResponse.Failure).error.message}",
-                                    color = Color.Red
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
 
@@ -413,8 +489,9 @@ fun HomeScreen(
                         Text(
                             text = stringResource(R.string._5_day_forecast),
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF2D3748),
-                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.teal_700),
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
@@ -437,8 +514,12 @@ fun HomeScreen(
                             is ForecastResultResponse.Failure -> {
                                 Text(
                                     text = stringResource(R.string.error_loading_hourly_forecast),
-                                    color = Color.Red
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal
                                 )
+
                             }
 
                             ForecastResultResponse.Loading -> {
@@ -455,7 +536,7 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -472,7 +553,9 @@ fun HomeScreen(
                         Text(
                             text = "Error: ${(weatherState as Response.Failure).error.message}",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Red
+                            color = Color.Red,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal
                         )
 
                         Button(
@@ -511,7 +594,7 @@ fun WeatherDetailCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(Color.Transparent)
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -522,165 +605,15 @@ fun WeatherDetailCard(
                 contentDescription = title,
                 tint = color
             )
-            Text(text = title, style = MaterialTheme.typography.bodySmall)
+            Text(text = title, style = MaterialTheme.typography.titleMedium ,  fontFamily = customFontFamily,
+                fontWeight = FontWeight.ExtraLight)
             Text(
                 text = LocalizationHelper.convertToArabicNumbers("$value$unit",context),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.bodyLarge,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Normal
             )
         }
     }
 }
 
-@Composable
-fun HourlyForecastItem(item: HourlyWeather, temperatureUnit: String) {
-    val context = LocalContext.current
-    val time = formatTime(item.dt, context)
-    val temperature = item.main.temp.toInt()
-    val icon = item.weather.firstOrNull()?.icon ?: "01d"
-
-    Card(
-        modifier = Modifier.width(80.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = time,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF718096)
-            )
-
-            WeatherIcon(
-                iconCode = icon,
-                modifier = Modifier.size(40.dp)
-            )
-
-            Text(
-                text = LocalizationHelper.convertToArabicNumbers("$temperature$temperatureUnit",context),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2D3748)
-            )
-        }
-    }
-}
-
-@Composable
-fun DailyForecastItem(item: HourlyWeather, temperatureUnit: String) {
-    val context = LocalContext.current
-    val date = formatDate(item.dt, context)
-    val temp = item.main.temp.toInt()
-    val icon = item.weather.firstOrNull()?.icon ?: "01d"
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = date,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF2D3748),
-                modifier = Modifier.weight(1f)
-            )
-
-            WeatherIcon(
-                iconCode = icon,
-                modifier = Modifier.size(40.dp)
-            )
-
-            Text(
-                text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnit", context),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2D3748)
-            )
-        }
-    }
-}
-
-private fun fetchLocationAndWeather(
-    locationHelper: LocationManager,
-    onSuccess: (Location) -> Unit,
-    context: Context
-) {
-    if (locationHelper.checkPermissions()) {
-        if (locationHelper.isLocationEnabled()) {
-            locationHelper.getFreshLocation(
-                onSuccess = onSuccess,
-                onFailure = { error ->
-                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                }
-            )
-        } else {
-            Toast.makeText(
-                context,
-                context.getString(R.string.turn_on_location_services),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    } else {
-        Toast.makeText(
-            context,
-            context.getString(R.string.location_permissions_not_granted),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-}
-
-
- fun extractDailyForecast(hourlyList: List<HourlyWeather>, context: Context): List<HourlyWeather> {
-    val calendar = Calendar.getInstance()
-    val currentDate = calendar.time
-
-    return hourlyList
-        .filter { item ->
-            val itemDate = Date(item.dt * 1000)
-            !isSameDay(currentDate, itemDate)
-        }
-        .groupBy { item ->
-            if (LocalizationHelper.isArabicLanguage(context)) {
-                SimpleDateFormat("yyyy-MM-dd", Locale("ar"))
-                    .format(Date(item.dt * 1000))
-            } else {
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    .format(Date(item.dt * 1000))
-            }
-        }
-        .map { (_, items) ->
-            items.maxByOrNull { it.main.temp } ?: items.first()
-        }
-        .sortedBy { it.dt }
-        .take(5)
-}
-
-
-
-@Composable
-fun WeatherIcon(
-    iconCode: String,
-    modifier: Modifier = Modifier
-) {
-    val iconRes = remember(iconCode) { getWeatherIconRes(iconCode) }
-
-    Icon(
-        painter = painterResource(id = iconRes),
-        contentDescription = "Weather icon",
-        modifier = modifier,
-        tint = Color.Unspecified
-    )
-}

@@ -8,8 +8,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.os.Looper
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.example.forecanow.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -24,9 +27,14 @@ class LocationManager(private val context: Context, private val fusedLocationPro
     }
 
     fun isLocationEnabled(): Boolean {
-        val systemLocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return systemLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                systemLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            locationManager.isLocationEnabled
+        } else {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                    locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        }
     }
 
 
@@ -68,4 +76,30 @@ class LocationManager(private val context: Context, private val fusedLocationPro
         }, Looper.getMainLooper())
     }
 
+
+    fun fetchLocationAndWeather(
+        onSuccess: (Location) -> Unit,
+        context: Context
+    ): Boolean {
+        if (!checkPermissions()) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.location_permissions_not_granted),
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        if (!isLocationEnabled()) {
+            return false
+        }
+
+        getFreshLocation(
+            onSuccess = onSuccess,
+            onFailure = { error ->
+                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+            }
+        )
+        return true
+    }
 }

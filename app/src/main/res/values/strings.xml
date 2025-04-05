@@ -96,5 +96,14 @@
     <string name="map_location">Select from Map</string>
     <string name="favorite_details">Favorite Details</string>
     <string name="cloud">Cloud</string>
+    <string name="stay_updated_with_the_latest_weather_conditions_get_forecasts_for_your_location_or_search_any_city_worldwide">Stay updated with the latest weather conditions. Get forecasts for your location or search any city worldwide</string>
+    <string name="get_started">Get Started</string>
+    <string name="location_required">Location is required</string>
+    <string name="enable_location_message">You must enable location services to get accurate weather data</string>
+    <string name="enable_location">Enable Location</string>
+    <string name="please_enable_location">Please enable location services to use the app.</string>
+    <string name="enable">Enable</string>
+
+
 
 </resources>

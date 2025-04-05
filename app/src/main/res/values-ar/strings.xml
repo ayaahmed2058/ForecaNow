@@ -96,4 +96,12 @@
     <string name="map_location">اختر من الخريطة</string>
     <string name="favorite_details">التفاصيل المفضله</string>
     <string name="cloud">السحب</string>
+    <string name="stay_updated_with_the_latest_weather_conditions_get_forecasts_for_your_location_or_search_any_city_worldwide">ابقَ محدثًا بأحدث أحوال الطقس. احصل على التوقعات لموقعك أو ابحث عن أي مدينة في العالم</string>
+    <string name="get_started">هيا نبدأ</string>
+    <string name="location_required">الموقع مطلوب</string>
+    <string name="enable_location_message">يجب تفعيل خدمة الموقع للحصول على بيانات الطقس الدقيقة</string>
+    <string name="enable_location">تفعيل الموقع</string>
+    <string name="please_enable_location">يرجى تفعيل خدمات الموقع لاستخدام التطبيق.</string>
+    <string name="enable">تفعيل</string>
+
 </resources>
