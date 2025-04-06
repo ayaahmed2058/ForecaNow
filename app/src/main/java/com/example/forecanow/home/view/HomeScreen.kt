@@ -91,10 +91,11 @@ import com.example.forecanow.utils.Units.Companion.getCountryName
 import com.example.forecanow.utils.Units.Companion.getPressureUnit
 import com.example.forecanow.utils.Units.Companion.getTemperatureUnitSymbol
 import com.example.forecanow.utils.Units.Companion.getWindSpeedUnitSymbol
+import com.example.forecanow.utils.checkdays.isSameDay
 import com.example.forecanow.utils.customFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -543,19 +544,19 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            painter = painterResource(R.drawable.internet),
                             contentDescription = stringResource(R.string.error),
                             tint = Color.Red,
                             modifier = Modifier.size(48.dp)
                         )
-
-                        Text(
-                            text = "Error: ${(weatherState as Response.Failure).error.message}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Red,
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Normal
-                        )
+//
+//                        Text(
+//                            text = "Error: ${(weatherState as Response.Failure).error.message}",
+//                            style = MaterialTheme.typography.bodyLarge,
+//                            color = Color.Red,
+//                            fontFamily = customFontFamily,
+//                            fontWeight = FontWeight.Normal
+//                        )
 
                         Button(
                             onClick = {
