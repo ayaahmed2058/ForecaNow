@@ -372,8 +372,4 @@ private fun updateLocale(context: Context, language: AppLanguage) {
     }
 
     resources.updateConfiguration(configuration, resources.displayMetrics)
-
-    if (context is Activity) {
-        context.recreate()
-    }
 }

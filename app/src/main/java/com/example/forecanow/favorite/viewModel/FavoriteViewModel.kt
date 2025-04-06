@@ -34,9 +34,6 @@ class FavoriteViewModel( val repository: RepositoryInterface) : ViewModel() {
         }
     }
 
-    suspend fun getFavoriteById(id: Int): FavoriteLocation? {
-        return repository.getFavoriteById(id)
-    }
 
     fun addFavorite(location: FavoriteLocation) {
         viewModelScope.launch {

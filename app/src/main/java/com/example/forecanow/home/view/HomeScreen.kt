@@ -91,11 +91,10 @@ import com.example.forecanow.utils.Units.Companion.getCountryName
 import com.example.forecanow.utils.Units.Companion.getPressureUnit
 import com.example.forecanow.utils.Units.Companion.getTemperatureUnitSymbol
 import com.example.forecanow.utils.Units.Companion.getWindSpeedUnitSymbol
-import com.example.forecanow.utils.checkdays.isSameDay
 import com.example.forecanow.utils.customFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.*
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

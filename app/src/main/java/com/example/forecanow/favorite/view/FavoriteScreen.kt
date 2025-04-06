@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -143,11 +144,16 @@ fun FavoriteLocationCard(
                 Text(text = stringResource(R.string.do_you_want_to_delete_this_location_from_favorites))
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
-                    onDelete(favorite)
-                    showDialog = false
-                }) {
-                    Text(stringResource(R.string.yes))
+                Button(
+                    onClick = {
+                        onDelete(favorite)
+                        showDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(R.color.teal_700)
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {

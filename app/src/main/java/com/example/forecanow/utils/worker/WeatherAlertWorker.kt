@@ -1,4 +1,4 @@
-package com.example.forecanow.worker
+package com.example.forecanow.utils.worker
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -9,6 +9,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.media.RingtoneManager
 import android.util.Log
 import com.example.forecanow.R
@@ -80,20 +82,18 @@ class WeatherAlertWorker(
         val channelId = "weather_alerts"
         val channelName = "Weather Alerts"
 
-        val soundUri = if (alertType == "Alarm") {
+        val isAlarm = alertType.equals("Alarm", ignoreCase = true) || alertType.equals("Alert", ignoreCase = true)
+
+        val soundUri = if (isAlarm) {
             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         } else {
-            Uri.parse("android.resource://${context.packageName}/raw/notification_sound")
+            Uri.parse("android.resource://${context.packageName}/raw/alarm_sound")
         }
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = if (alertType == "Alarm") {
-                NotificationManager.IMPORTANCE_HIGH
-            } else {
-                NotificationManager.IMPORTANCE_DEFAULT
-            }
+            val importance = if (isAlarm) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_DEFAULT
 
             val channel = NotificationChannel(channelId, channelName, importance).apply {
                 description = "Weather alert notifications"
@@ -104,25 +104,58 @@ class WeatherAlertWorker(
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                         .build()
                 )
-                if (alertType == "Alarm") {
-                    enableVibration(true)
+                enableVibration(true)
+                if (isAlarm) {
                     setBypassDnd(true)
                 }
             }
             notificationManager.createNotificationChannel(channel)
         }
 
-        val notification = NotificationCompat.Builder(context, channelId)
+
+        val snoozeIntent = Intent(context, SnoozeReceiver::class.java).apply {
+            putExtra("alert_type", alertType)
+            putExtra("location", location)
+        }
+
+        val snoozePendingIntent = PendingIntent.getBroadcast(
+            context,
+            1,
+            snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val dismissIntent = Intent(context, DismissReceiver::class.java).apply {
+            putExtra("notification_id", System.currentTimeMillis().toInt())
+        }
+
+        val dismissPendingIntent = PendingIntent.getBroadcast(
+            context,
+            2,
+            dismissIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notificationBuilder = NotificationCompat.Builder(context, channelId)
             .setContentTitle("Weather Alert: $alertType")
             .setContentText("$location - Temperature: $temperature")
             .setSmallIcon(R.drawable.weather_icon)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setSound(soundUri)
             .setAutoCancel(true)
-            .build()
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        if (isAlarm) {
+            notificationBuilder.addAction(R.drawable.snooze, "Snooze", snoozePendingIntent)
+            notificationBuilder.addAction(R.drawable.cancel_1, "Dismiss", dismissPendingIntent)
+        }
+
+        val notification = notificationBuilder.build()
+
+        val notificationId = dismissIntent.getIntExtra("notification_id", 0)
+        notificationManager.notify(notificationId, notification)
     }
+
+
 
     private fun createNotificationChannel(context: Context) {
         val soundUri =

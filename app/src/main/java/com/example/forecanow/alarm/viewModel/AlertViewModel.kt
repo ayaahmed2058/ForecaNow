@@ -15,13 +15,13 @@ import java.util.concurrent.TimeUnit
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.forecanow.data.db.WeatherAlert
-import com.example.forecanow.worker.WeatherAlertWorker
+import com.example.forecanow.utils.worker.WeatherAlertWorker
 import com.example.forecanow.utils.LocationManager
 import com.example.forecanow.data.repository.RepositoryImp
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlin.compareTo
+
 
 
 class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
@@ -96,38 +96,6 @@ class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
         WorkManager.getInstance(context).enqueue(request)
     }
 
-    private fun scheduleOneTimeAlert(context: Context, alert: WeatherAlert) {
-        val delay = alert.startTime - System.currentTimeMillis()
-
-        val inputData = workDataOf(
-            "alert_id" to alert.id,
-            "alert_type" to alert.alertType,
-            "latitude" to alert.locationLat,
-            "longitude" to alert.locationLon
-        )
-
-        val request = OneTimeWorkRequestBuilder<WeatherAlertWorker>()
-            .setInputData(inputData)
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .build()
-
-        WorkManager.getInstance(context).enqueue(request)
-    }
-
-    private fun triggerAlertImmediately(context: Context, alert: WeatherAlert) {
-        val inputData = workDataOf(
-            "alert_id" to alert.id,
-            "alert_type" to alert.alertType,
-            "latitude" to alert.locationLat,
-            "longitude" to alert.locationLon
-        )
-
-        val request = OneTimeWorkRequestBuilder<WeatherAlertWorker>()
-            .setInputData(inputData)
-            .build()
-
-        WorkManager.getInstance(context).enqueue(request)
-    }
 
     private fun startPeriodicAlertCheck() {
         viewModelScope.launch {
