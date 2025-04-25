@@ -38,7 +38,8 @@ class AlertViewModel(private val repository: RepositoryImp) : ViewModel() {
 
     private fun getAllAlerts() {
         viewModelScope.launch {
-            repository.getAllAlerts().collect { alertsList ->
+            repository.getAllAlerts().
+            collect { alertsList ->
                 _alerts.value = alertsList
             }
         }

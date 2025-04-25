@@ -35,13 +35,11 @@ import com.example.forecanow.data.db.WeatherDatabase
 import com.example.forecanow.data.db.WeatherLocalDataSourceImp
 import com.example.forecanow.favorite.viewModel.FavoriteViewModel
 import com.example.forecanow.favorite.viewModel.FavoriteViewModelFactory
-import com.example.forecanow.home.viewModel.HomeViewModel
-import com.example.forecanow.home.viewModel.HomeViewModelFactory
 import com.example.forecanow.data.network.RetrofitHelper
 import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
-import com.example.forecanow.pojo.LocationData
+import com.example.forecanow.data.pojo.LocationData
 import com.example.forecanow.data.repository.RepositoryImp
-import com.example.forecanow.pojo.LocationSource
+import com.example.forecanow.data.pojo.LocationSource
 import com.example.forecanow.setting.viewModel.SettingsViewModel
 import com.example.forecanow.setting.viewModel.SettingsViewModelFactory
 import com.google.android.gms.maps.model.LatLng

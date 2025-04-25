@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import java.util.Date
 import java.util.Locale
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -62,6 +63,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,48 +88,74 @@ fun AlertScreen(viewModel: AlertViewModel = viewModel(factory = AlarmViewModelFa
     }
 
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true },
-                containerColor = colorResource(R.color.teal_700)) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_alert) , tint = Color.White)
-            }
-        }
-    ) { paddingValues ->
-        if (alerts.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { showDialog = true },
+                    containerColor = colorResource(R.color.teal_700)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = stringResource(R.string.no_alerts),
-                        tint = colorResource(R.color.teal_200),
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.no_alert_added_yet),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = colorResource(R.color.teal_200),
-                        fontFamily = customFontFamily,
-                        fontWeight = FontWeight.Normal
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add_alert),
+                        tint = Color.White
                     )
                 }
             }
-        }
-        else {
-            LazyColumn(modifier = Modifier.padding(paddingValues)) {
-                items(alerts) { alert ->
-                    AlertItem(alert, onDelete = { viewModel.removeAlert(alert, context) })
+        ) { paddingValues ->
+            if (alerts.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        //.padding(paddingValues)
+                            ,
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = stringResource(R.string.no_alerts),
+                            tint = colorResource(R.color.teal_200),
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.no_alert_added_yet),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = colorResource(R.color.teal_200),
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal
+                        )
+                    }
                 }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                    //.padding(16.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                LazyColumn(modifier = Modifier.padding(paddingValues)) {
+                    items(alerts) { alert ->
+                        AlertItem(alert, onDelete = { viewModel.removeAlert(alert, context) })
+                    }
+                }
+                    }
             }
-        }
+
     }
 
     if (showDialog) {

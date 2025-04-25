@@ -1,6 +1,6 @@
 package com.example.forecanow.data.db
 
-import com.example.forecanow.pojo.AppSettings
+import com.example.forecanow.data.pojo.AppSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

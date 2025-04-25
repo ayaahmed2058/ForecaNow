@@ -1,7 +1,7 @@
 package com.example.forecanow.data
 
-import com.example.forecanow.pojo.ForecastResponse
-import com.example.forecanow.pojo.WeatherResponse
+import com.example.forecanow.data.pojo.ForecastResponse
+import com.example.forecanow.data.pojo.WeatherResponse
 
 
 sealed class Response {

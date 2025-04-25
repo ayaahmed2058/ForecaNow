@@ -1,4 +1,4 @@
-package com.example.forecanow.pojo
+package com.example.forecanow.data.pojo
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 

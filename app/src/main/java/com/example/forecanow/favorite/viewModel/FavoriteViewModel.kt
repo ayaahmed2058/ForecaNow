@@ -29,7 +29,7 @@ class FavoriteViewModel( val repository: RepositoryInterface) : ViewModel() {
     fun getAllFavorites() {
         viewModelScope.launch {
             repository.getAllFavorites().collect { favoritesList ->
-                _favorites.value = favoritesList
+                _favorites.postValue(favoritesList)
             }
         }
     }

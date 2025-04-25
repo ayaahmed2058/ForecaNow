@@ -1,5 +1,6 @@
 package com.example.forecanow.favorite.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,11 +33,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,7 +52,7 @@ import com.example.forecanow.data.ForecastResultResponse
 import com.example.forecanow.data.db.FavoriteLocation
 import com.example.forecanow.data.db.WeatherDatabase
 import com.example.forecanow.data.db.WeatherLocalDataSourceImp
-import com.example.forecanow.pojo.TemperatureUnit
+import com.example.forecanow.data.pojo.TemperatureUnit
 import com.example.forecanow.utils.Format.formatTime
 import com.example.forecanow.utils.LocalizationHelper
 import com.example.forecanow.utils.LocalizationHelper.getArabicWeatherDescription
@@ -163,249 +165,283 @@ fun FavoriteDetailsScreen(
                 val windSpeedUnitSymbol = getWindSpeedUnitSymbol(settings.windSpeedUnit)
                 val pressureUnit = getPressureUnit()
 
-                LazyColumn(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .background(colorResource(R.color.bgColor)),
-                    contentPadding = PaddingValues(16.dp)
+                      //  .padding(padding)
                 ) {
-                    item {
-                        Column(
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        ) {
-                            Text(
-                                text = if (LocalizationHelper.isArabicLanguage(context)) {
-                                    "${weatherData.name}, ${getCountryName(weatherData.sys.country, context)}"
-                                } else {
-                                    "${weatherData.name}, ${weatherData.sys.country}"
-                                },
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = colorResource(R.color.teal_700),
-                                fontFamily = customFontFamily,
-                                fontWeight = FontWeight.ExtraLight
-                            )
-
-                            Text(
-                                text = if (LocalizationHelper.isArabicLanguage(context)) {
-                                    SimpleDateFormat("EEEE, dd MMMM yyyy - hh:mm a", Locale("ar")).format(Date())
-                                } else {
-                                    SimpleDateFormat("EEEE, dd MMMM yyyy - hh:mm a", Locale.getDefault()).format(Date())
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colorResource(R.color.dateColor)
-                            )
-                        }
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(
-                                topStart = 20.dp,
-                                topEnd = 20.dp,
-                                bottomEnd = 60.dp,
-                                bottomStart = 20.dp
-                            ),
-                            colors = CardDefaults.cardColors(colorResource(R.color.teal_200)),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            //.background(colorResource(R.color.bgColor)),
+                                ,
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        item {
                             Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                modifier = Modifier.padding(bottom = 16.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = LocalizationHelper.convertToArabicNumbers("$temp$temperatureUnitSymbol", context),
-                                        style = MaterialTheme.typography.displayMedium,
-                                        fontFamily = customFontFamily,
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = 56.sp,
-                                        color = colorResource(R.color.countryColor)
-                                    )
-
-                                    WeatherIcon(
-                                        iconCode = iconCode,
-                                        modifier = Modifier.size(120.dp)
-                                    )
-                                }
+                                Text(
+                                    text = if (LocalizationHelper.isArabicLanguage(context)) {
+                                        "${weatherData.name}, ${
+                                            getCountryName(
+                                                weatherData.sys.country,
+                                                context
+                                            )
+                                        }"
+                                    } else {
+                                        "${weatherData.name}, ${weatherData.sys.country}"
+                                    },
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = colorResource(R.color.teal_700),
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.ExtraLight
+                                )
 
                                 Text(
                                     text = if (LocalizationHelper.isArabicLanguage(context)) {
-                                        getArabicWeatherDescription(description).replaceFirstChar { it }
+                                        SimpleDateFormat(
+                                            "EEEE, dd MMMM yyyy - hh:mm a",
+                                            Locale("ar")
+                                        ).format(Date())
                                     } else {
-                                        description.replaceFirstChar { it.titlecase() }
+                                        SimpleDateFormat(
+                                            "EEEE, dd MMMM yyyy - hh:mm a",
+                                            Locale.getDefault()
+                                        ).format(Date())
                                     },
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = colorResource(R.color.cloudColor),
-                                    modifier = Modifier.padding(top = 8.dp),
-                                    fontFamily = customFontFamily,
-                                    fontWeight = FontWeight.Normal
-                                )
-
-                                Text(
-                                    text = "${stringResource(R.string.feels_like_c)} ${feelsLike.toInt()}${temperatureUnitSymbol}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = colorResource(R.color.white),
-                                    fontFamily = customFontFamily,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            }
-                        }
-
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(3),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp)
-                                .padding(bottom = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            item {
-                                WeatherDetailCard(
-                                    icon = R.drawable.humidity,
-                                    title = stringResource(R.string.humidity),
-                                    value = "$humidity",
-                                    unit = "%",
-                                    color = colorResource(R.color.teal_200)
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colorResource(R.color.dateColor)
                                 )
                             }
 
-                            item {
-                                WeatherDetailCard(
-                                    icon = R.drawable.air,
-                                    title = stringResource(R.string.wind_speed),
-                                    value = windSpeed.toString(),
-                                    unit = windSpeedUnitSymbol,
-                                    color = colorResource(R.color.teal_200)
-                                )
-                            }
-
-                            item {
-                                WeatherDetailCard(
-                                    icon = R.drawable.compress,
-                                    title = stringResource(R.string.pressure),
-                                    value = pressure.toString(),
-                                    unit = pressureUnit,
-                                    color = colorResource(R.color.teal_200)
-                                )
-                            }
-
-                            item {
-                                WeatherDetailCard(
-                                    icon = R.drawable.weather,
-                                    title = stringResource(R.string.cloud),
-                                    value = cloud.toString(),
-                                    unit = "%",
-                                    color = colorResource(R.color.teal_200)
-                                )
-                            }
-
-                            item {
-                                WeatherDetailCard(
-                                    icon = R.drawable.water_lux,
-                                    title = stringResource(R.string.sunrise),
-                                    value = formatTime(sunrise, context),
-                                    unit = "",
-                                    color = colorResource(R.color.teal_200)
-                                )
-                            }
-
-                            item {
-                                WeatherDetailCard(
-                                    icon = R.drawable.wb_twilight,
-                                    title = stringResource(R.string.sunset),
-                                    value = formatTime(sunset, context),
-                                    unit = "",
-                                    color = colorResource(R.color.teal_200)
-                                )
-                            }
-                        }
-                    }
-
-                    item {
-                        Text(
-                            text = stringResource(R.string.hourly_forecast),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colorResource(R.color.teal_700),
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Normal,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        when (forecastState) {
-                            is ForecastResultResponse.forecastSuccess -> {
-                                val forecastData =
-                                    (forecastState as ForecastResultResponse.forecastSuccess).data
-                                val hourlyData = forecastData.list.take(8)
-
-                                LazyRow(
-                                    modifier = Modifier.padding(bottom = 24.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(hourlyData) { item ->
-                                        HourlyForecastItem(item, temperatureUnitSymbol)
-                                    }
-                                }
-                            }
-                            is ForecastResultResponse.Failure -> {
-                                Text(
-                                    text = "Error: ${(forecastState as ForecastResultResponse.Failure).error.message}",
-                                    color = Color.Red,
-                                    modifier = Modifier.padding(16.dp),
-                                    fontFamily = customFontFamily,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            }
-                            ForecastResultResponse.Loading -> {
-                                CircularProgressIndicator()
-                            }
-                            else -> {}
-                        }
-                    }
-
-                    item {
-                        Text(
-                            text = stringResource(R.string._5_day_forecast),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colorResource(R.color.teal_700),
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Normal,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        when (forecastState) {
-                            is ForecastResultResponse.forecastSuccess -> {
-                                val forecastData =
-                                    (forecastState as ForecastResultResponse.forecastSuccess).data
-                                val dailyForecast = extractDailyForecast(forecastData.list, context)
-
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 16.dp),
+                                shape = RoundedCornerShape(
+                                    topStart = 20.dp,
+                                    topEnd = 20.dp,
+                                    bottomEnd = 60.dp,
+                                    bottomStart = 20.dp
+                                ),
+                                colors = CardDefaults.cardColors(colorResource(R.color.teal_200)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
                                 Column(
-                                    modifier = Modifier.padding(bottom = 24.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    modifier = Modifier.padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    dailyForecast.forEach { item ->
-                                        DailyForecastItem(item, temperatureUnitSymbol)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = LocalizationHelper.convertToArabicNumbers(
+                                                "$temp$temperatureUnitSymbol",
+                                                context
+                                            ),
+                                            style = MaterialTheme.typography.displayMedium,
+                                            fontFamily = customFontFamily,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 56.sp,
+                                            color = colorResource(R.color.countryColor)
+                                        )
+
+                                        WeatherIcon(
+                                            iconCode = iconCode,
+                                            modifier = Modifier.size(120.dp)
+                                        )
                                     }
+
+                                    Text(
+                                        text = if (LocalizationHelper.isArabicLanguage(context)) {
+                                            getArabicWeatherDescription(description).replaceFirstChar { it }
+                                        } else {
+                                            description.replaceFirstChar { it.titlecase() }
+                                        },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = colorResource(R.color.cloudColor),
+                                        modifier = Modifier.padding(top = 8.dp),
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Normal
+                                    )
+
+                                    Text(
+                                        text = "${stringResource(R.string.feels_like_c)} ${feelsLike.toInt()}${temperatureUnitSymbol}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = colorResource(R.color.white),
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Normal
+                                    )
                                 }
                             }
-                            is ForecastResultResponse.Failure -> {
-                                Text(
-                                    text = stringResource(R.string.error_loading_hourly_forecast),
-                                    color = Color.Red,
-                                    modifier = Modifier.padding(16.dp),
-                                    fontFamily = customFontFamily,
-                                    fontWeight = FontWeight.Normal
-                                )
+
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp)
+                                    .padding(bottom = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                item {
+                                    WeatherDetailCard(
+                                        icon = R.drawable.humidity,
+                                        title = stringResource(R.string.humidity),
+                                        value = "$humidity",
+                                        unit = "%",
+                                        color = colorResource(R.color.teal_200)
+                                    )
+                                }
+
+                                item {
+                                    WeatherDetailCard(
+                                        icon = R.drawable.air,
+                                        title = stringResource(R.string.wind_speed),
+                                        value = windSpeed.toString(),
+                                        unit = windSpeedUnitSymbol,
+                                        color = colorResource(R.color.teal_200)
+                                    )
+                                }
+
+                                item {
+                                    WeatherDetailCard(
+                                        icon = R.drawable.compress,
+                                        title = stringResource(R.string.pressure),
+                                        value = pressure.toString(),
+                                        unit = pressureUnit,
+                                        color = colorResource(R.color.teal_200)
+                                    )
+                                }
+
+                                item {
+                                    WeatherDetailCard(
+                                        icon = R.drawable.weather,
+                                        title = stringResource(R.string.cloud),
+                                        value = cloud.toString(),
+                                        unit = "%",
+                                        color = colorResource(R.color.teal_200)
+                                    )
+                                }
+
+                                item {
+                                    WeatherDetailCard(
+                                        icon = R.drawable.water_lux,
+                                        title = stringResource(R.string.sunrise),
+                                        value = formatTime(sunrise, context),
+                                        unit = "",
+                                        color = colorResource(R.color.teal_200)
+                                    )
+                                }
+
+                                item {
+                                    WeatherDetailCard(
+                                        icon = R.drawable.wb_twilight,
+                                        title = stringResource(R.string.sunset),
+                                        value = formatTime(sunset, context),
+                                        unit = "",
+                                        color = colorResource(R.color.teal_200)
+                                    )
+                                }
                             }
-                            ForecastResultResponse.Loading -> {
-                                CircularProgressIndicator()
+                        }
+
+                        item {
+                            Text(
+                                text = stringResource(R.string.hourly_forecast),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = colorResource(R.color.teal_700),
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+
+                            when (forecastState) {
+                                is ForecastResultResponse.forecastSuccess -> {
+                                    val forecastData =
+                                        (forecastState as ForecastResultResponse.forecastSuccess).data
+                                    val hourlyData = forecastData.list.take(8)
+
+                                    LazyRow(
+                                        modifier = Modifier.padding(bottom = 24.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(hourlyData) { item ->
+                                            HourlyForecastItem(item, temperatureUnitSymbol)
+                                        }
+                                    }
+                                }
+
+                                is ForecastResultResponse.Failure -> {
+                                    Text(
+                                        text = "Error: ${(forecastState as ForecastResultResponse.Failure).error.message}",
+                                        color = Color.Red,
+                                        modifier = Modifier.padding(16.dp),
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Normal
+                                    )
+                                }
+
+                                ForecastResultResponse.Loading -> {
+                                    CircularProgressIndicator()
+                                }
+
+                                else -> {}
                             }
-                            else -> {}
+                        }
+
+                        item {
+                            Text(
+                                text = stringResource(R.string._5_day_forecast),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = colorResource(R.color.teal_700),
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+
+                            when (forecastState) {
+                                is ForecastResultResponse.forecastSuccess -> {
+                                    val forecastData =
+                                        (forecastState as ForecastResultResponse.forecastSuccess).data
+                                    val dailyForecast =
+                                        extractDailyForecast(forecastData.list, context)
+
+                                    Column(
+                                        modifier = Modifier.padding(bottom = 24.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        dailyForecast.forEach { item ->
+                                            DailyForecastItem(item, temperatureUnitSymbol)
+                                        }
+                                    }
+                                }
+
+                                is ForecastResultResponse.Failure -> {
+                                    Text(
+                                        text = stringResource(R.string.error_loading_hourly_forecast),
+                                        color = Color.Red,
+                                        modifier = Modifier.padding(16.dp),
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Normal
+                                    )
+                                }
+
+                                ForecastResultResponse.Loading -> {
+                                    CircularProgressIndicator()
+                                }
+
+                                else -> {}
+                            }
                         }
                     }
                 }

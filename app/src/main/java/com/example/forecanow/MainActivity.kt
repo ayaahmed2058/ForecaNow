@@ -7,6 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,10 +20,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
@@ -53,6 +60,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
@@ -78,41 +86,60 @@ fun MainScreen() {
     )
 
     val iconColor by animateColorAsState(
-        targetValue = if (drawerState.isOpen) colorResource(R.color.teal_700) else Color.Black
+        targetValue = if (drawerState.isOpen) colorResource(R.color.teal_200) else Color.Black
     )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(
-                    text = stringResource(R.string.menu),
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 20.sp,
-                    fontFamily = customFontFamily,
-                    fontWeight = FontWeight.ExtraLight
-                )
-                items.forEachIndexed { index, item ->
-                    NavigationDrawerItem(
-                        icon = { Icon(icons[index], contentDescription = item) },
-                        label = {
-                            Text(
-                                text = item,
-                                modifier = Modifier.padding(start = if (LocalizationHelper.isArabicLanguage()) 8.dp else 0.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .paint(
+                            painter = painterResource(id = R.drawable.bg1),
+                            contentScale = ContentScale.Crop
+                        )
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.menu),
+                            fontSize = 20.sp,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.ExtraLight,
+                            color = Color.White
+                        )
+
+                        items.forEachIndexed { index, item ->
+                            NavigationDrawerItem(
+                                icon = {
+                                    Icon(
+                                        icons[index],
+                                        contentDescription = item,
+                                        tint = colorResource(R.color.teal_700)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = item,
+                                        color = Color.White
+                                    )
+                                },
+                                selected = false,
+                                onClick = {
+                                    when (index) {
+                                        0 -> navController.navigate("home")
+                                        1 -> navController.navigate("favorite")
+                                        2 -> navController.navigate("alarm")
+                                        3 -> navController.navigate("settings")
+                                    }
+                                    scope.launch { drawerState.close() }
+                                },
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
-                        },
-                        selected = false,
-                        onClick = {
-                            when(index) {
-                                0 -> navController.navigate("home")
-                                1 -> navController.navigate("favorite")
-                                2 -> navController.navigate("alarm")
-                                3 -> navController.navigate("settings")
-                            }
-                            scope.launch { drawerState.close() }
-                        },
-                        modifier = Modifier.padding(8.dp)
-                    )
+                        }
+                    }
                 }
             }
         }

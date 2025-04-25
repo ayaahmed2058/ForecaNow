@@ -1,32 +1,33 @@
 package com.example.forecanow.setting.view
 
-
-import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.LocationOn
 import java.util.Locale
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,20 +39,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.forecanow.R
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import com.example.forecanow.data.db.WeatherDatabase
 import com.example.forecanow.data.db.WeatherLocalDataSourceImp
 import com.example.forecanow.data.network.RetrofitHelper
 import com.example.forecanow.data.network.WeatherRemoteDataSourceImp
 import com.example.forecanow.data.repository.RepositoryImp
-import com.example.forecanow.pojo.AppLanguage
-import com.example.forecanow.pojo.AppSettings
-import com.example.forecanow.pojo.LocationSource
+import com.example.forecanow.data.pojo.AppLanguage
+import com.example.forecanow.data.pojo.AppSettings
+import com.example.forecanow.data.pojo.LocationSource
 import com.example.forecanow.setting.viewModel.SettingsViewModel
 import com.example.forecanow.setting.viewModel.SettingsViewModelFactory
-import com.example.forecanow.pojo.TemperatureUnit
-import com.example.forecanow.pojo.WindSpeedUnit
+import com.example.forecanow.data.pojo.TemperatureUnit
+import com.example.forecanow.data.pojo.WindSpeedUnit
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,23 +82,36 @@ fun SettingsScreen(
         }
     }
 
+
     Scaffold { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                //.padding(16.dp)
         ) {
-            item { 
-                LocationPreferenceSection(
-                    settings = settings,
-                    viewModel = viewModel,
-                    onNavigateToOpenStreetMap = {
-                        navController.navigate("map/settings")
-                    }
-                )
+            Image(
+                painter = painterResource(id = R.drawable.bg),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                item {
+                    LocationPreferenceSection(
+                        settings = settings,
+                        viewModel = viewModel,
+                        onNavigateToOpenStreetMap = {
+                            navController.navigate("map/settings")
+                        }
+                    )
+                }
+                item { UnitsPreferenceSection(settings, viewModel) }
+                item { LanguagePreferenceSection(settings, viewModel, context) }
             }
-            item { UnitsPreferenceSection(settings, viewModel) }
-            item { LanguagePreferenceSection(settings, viewModel, context) }
         }
     }
 }
@@ -102,12 +119,49 @@ fun SettingsScreen(
 
 @Composable
 private fun SettingsCategory(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
+    Row(
         modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp),
-        color = colorResource(R.color.teal_700)
-    )
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        when (title) {
+            stringResource(R.string.location_settings) -> {
+                Icon(
+                    painter = painterResource(R.drawable.location),
+                    contentDescription = "Location",
+                    modifier = Modifier.size(40.dp),
+                    tint = Color.Unspecified
+                    //tint = colorResource(R.color.teal_700)
+                )
+            }
+
+            stringResource(R.string.unit_settings) -> {
+                Icon(
+                    painter = painterResource(R.drawable.temperature),
+                    contentDescription = "Unit",
+                    modifier = Modifier.size(40.dp),
+                    tint = Color.Unspecified
+                    //tint = colorResource(R.color.teal_700)
+                )
+            }
+
+            stringResource(R.string.language_settings) -> {
+                Icon(
+                    painter = painterResource(R.drawable.languages),
+                    contentDescription = "Language",
+                    modifier = Modifier.size(40.dp),
+                    tint = Color.Unspecified
+                    //tint = colorResource(R.color.teal_700)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = colorResource(R.color.teal_700)
+        )
+    }
 }
 
 @Composable
@@ -144,7 +198,7 @@ private fun LocationPreference(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = when(source) {
+                        text = when (source) {
                             LocationSource.GPS -> stringResource(R.string.gps_location)
                             LocationSource.OPEN_STREET_MAP -> stringResource(R.string.map_location)
                         },
@@ -190,7 +244,7 @@ private fun TemperatureUnitPreference(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = when(unit) {
+                        text = when (unit) {
                             TemperatureUnit.CELSIUS -> stringResource(R.string.celsius)
                             TemperatureUnit.FAHRENHEIT -> stringResource(R.string.fahrenheit)
                             TemperatureUnit.KELVIN -> stringResource(R.string.kelvin)
@@ -237,7 +291,7 @@ private fun WindSpeedUnitPreference(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = when(unit) {
+                        text = when (unit) {
                             WindSpeedUnit.METERS_PER_SECOND -> stringResource(R.string.meters_per_second)
                             WindSpeedUnit.MILES_PER_HOUR -> stringResource(R.string.miles_per_hour)
                         },
@@ -283,7 +337,7 @@ private fun LanguagePreference(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = when(language) {
+                        text = when (language) {
                             AppLanguage.ENGLISH -> stringResource(R.string.english)
                             AppLanguage.ARABIC -> stringResource(R.string.arabic)
                         },

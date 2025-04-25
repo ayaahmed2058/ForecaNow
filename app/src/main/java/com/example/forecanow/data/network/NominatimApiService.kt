@@ -1,7 +1,7 @@
 package com.example.forecanow.data.network
 
 
-import com.example.forecanow.pojo.NominatimLocation
+import com.example.forecanow.data.pojo.NominatimLocation
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

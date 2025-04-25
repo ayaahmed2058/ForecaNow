@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.forecanow.R
-import com.example.forecanow.pojo.TemperatureUnit
-import com.example.forecanow.pojo.WindSpeedUnit
+import com.example.forecanow.data.pojo.TemperatureUnit
+import com.example.forecanow.data.pojo.WindSpeedUnit
 
 class Units {
     companion object{

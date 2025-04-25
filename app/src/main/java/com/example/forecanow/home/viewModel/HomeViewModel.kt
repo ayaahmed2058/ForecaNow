@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecanow.data.Response
 import com.example.forecanow.data.ForecastResultResponse
-import com.example.forecanow.pojo.LocationData
+import com.example.forecanow.data.pojo.LocationData
 import com.example.forecanow.data.repository.RepositoryImp
 import com.example.forecanow.data.repository.RepositoryInterface
 import kotlinx.coroutines.Dispatchers
@@ -16,9 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.osmdroid.util.GeoPoint
 
 class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
 
@@ -31,8 +29,6 @@ class HomeViewModel ( val repository: RepositoryInterface) : ViewModel() {
     private val mutableForecast = MutableStateFlow<ForecastResultResponse>(ForecastResultResponse.Loading)
     val forecast = mutableForecast.asStateFlow()
 
-    private val _manualLocation = MutableStateFlow<GeoPoint?>(null)
-    val manualLocation: StateFlow<GeoPoint?> = _manualLocation.asStateFlow()
 
     fun getCurrentWeather(lat: Double, lon: Double, units: String = "metric") {
         viewModelScope.launch {

@@ -1,4 +1,4 @@
-package com.example.forecanow.pojo
+package com.example.forecanow.data.pojo
 
 import com.google.gson.annotations.SerializedName
 

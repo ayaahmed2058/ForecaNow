@@ -1,4 +1,4 @@
-package com.example.forecanow.pojo
+package com.example.forecanow.data.pojo
 
 data class Weather(
     val id: Int,

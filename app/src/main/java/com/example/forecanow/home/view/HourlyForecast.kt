@@ -18,7 +18,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.forecanow.R
-import com.example.forecanow.pojo.HourlyWeather
+import com.example.forecanow.data.pojo.HourlyWeather
 import com.example.forecanow.utils.Format.formatTime
 import com.example.forecanow.utils.LocalizationHelper
 import com.example.forecanow.utils.customFontFamily

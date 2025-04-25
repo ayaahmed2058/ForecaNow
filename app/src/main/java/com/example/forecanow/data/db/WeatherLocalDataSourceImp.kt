@@ -1,11 +1,11 @@
 package com.example.forecanow.data.db
 
 import android.util.Log
-import com.example.forecanow.pojo.AppLanguage
-import com.example.forecanow.pojo.AppSettings
-import com.example.forecanow.pojo.LocationSource
-import com.example.forecanow.pojo.TemperatureUnit
-import com.example.forecanow.pojo.WindSpeedUnit
+import com.example.forecanow.data.pojo.AppLanguage
+import com.example.forecanow.data.pojo.AppSettings
+import com.example.forecanow.data.pojo.LocationSource
+import com.example.forecanow.data.pojo.TemperatureUnit
+import com.example.forecanow.data.pojo.WindSpeedUnit
 import kotlinx.coroutines.flow.Flow
 
 class WeatherLocalDataSourceImp (private val dao: WeatherDao): WeatherLocalDataSourceInterface {

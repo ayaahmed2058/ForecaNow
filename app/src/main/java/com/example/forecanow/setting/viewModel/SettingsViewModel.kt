@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecanow.data.repository.RepositoryInterface
-import com.example.forecanow.pojo.AppLanguage
-import com.example.forecanow.pojo.AppSettings
-import com.example.forecanow.pojo.LocationSource
+import com.example.forecanow.data.pojo.AppLanguage
+import com.example.forecanow.data.pojo.AppSettings
+import com.example.forecanow.data.pojo.LocationSource
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

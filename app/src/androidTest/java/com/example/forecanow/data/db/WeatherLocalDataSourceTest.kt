@@ -21,8 +21,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class WeatherLocalDataSourceTest {
 
-
-
         private lateinit var dao: WeatherDao
         private lateinit var database: WeatherDatabase
         private lateinit var localDataSource: WeatherLocalDataSourceImp

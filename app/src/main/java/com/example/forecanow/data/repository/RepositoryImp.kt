@@ -5,9 +5,9 @@ import com.example.forecanow.data.db.FavoriteLocation
 import com.example.forecanow.data.db.WeatherAlert
 import com.example.forecanow.data.db.WeatherLocalDataSourceInterface
 import com.example.forecanow.data.network.WeatherRemoteDataSourceInterface
-import com.example.forecanow.pojo.ForecastResponse
-import com.example.forecanow.pojo.WeatherResponse
-import com.example.forecanow.pojo.AppSettings
+import com.example.forecanow.data.pojo.ForecastResponse
+import com.example.forecanow.data.pojo.WeatherResponse
+import com.example.forecanow.data.pojo.AppSettings
 import kotlinx.coroutines.flow.Flow
 
 class RepositoryImp private constructor(

@@ -3,6 +3,7 @@ package com.example.forecanow
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -38,6 +40,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.forecanow.utils.customFontFamily
+import kotlinx.coroutines.delay
 
 class WelcomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,28 +50,36 @@ class WelcomeScreen : ComponentActivity() {
         val isFirstLaunch = sharedPreferences.getBoolean("isFirstTime", true)
 
         if (isFirstLaunch) {
+
             setContent {
-                WelcomeScreenUI()
+                WelcomeScreenUI(sharedPreferences)
             }
-            val editor = sharedPreferences.edit()
-            editor.putBoolean("isFirstTime", false)
-            editor.apply()
         } else {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
     }
 }
 
 
-@SuppressLint("SuspiciousIndentation")
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun WelcomeScreenUI() {
 
+
+@SuppressLint("SuspiciousIndentation")
+@Composable
+fun WelcomeScreenUI(sharedPreferences: SharedPreferences) {
     val context = LocalContext.current
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.weather_anim))
+
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        sharedPreferences.edit().putBoolean("isFirstTime", false).apply()
+        context.startActivity(Intent(context, MainActivity::class.java))
+        if (context is ComponentActivity) {
+            context.finish()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -77,7 +88,6 @@ fun WelcomeScreenUI() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
         LottieAnimation(
             composition,
             iterations = LottieConstants.IterateForever,
@@ -95,6 +105,7 @@ fun WelcomeScreenUI() {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = stringResource(R.string.stay_updated_with_the_latest_weather_conditions_get_forecasts_for_your_location_or_search_any_city_worldwide),
             fontSize = 20.sp,
@@ -104,22 +115,5 @@ fun WelcomeScreenUI() {
                 .fillMaxWidth(),
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(60.dp))
-        Button(
-            onClick = {
-                val intent = Intent(context, MainActivity::class.java)
-                context.startActivity(intent)
-            },
-            shape = RoundedCornerShape(50),
-            modifier = Modifier
-                .shadow(.6.dp, RoundedCornerShape(50))
-                .background( color = colorResource(R.color.teal_200)),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-        ) {
-            Text(text = stringResource(R.string.get_started), color = colorResource(R.color.white),
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Normal)
-        }
     }
 }
-

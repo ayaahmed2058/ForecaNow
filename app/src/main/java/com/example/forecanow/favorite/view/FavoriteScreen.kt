@@ -2,6 +2,7 @@ package com.example.forecanow.favorite.view
 
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,6 +28,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -65,19 +67,21 @@ fun FavoriteScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.message.collect{
-                message -> Toast.makeText(context,message,Toast.LENGTH_LONG).show()
+        viewModel.message.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
-
-
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("map/favorites") },
                 containerColor = colorResource(R.color.teal_700)
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_favorite), tint = Color.White)
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = stringResource(R.string.add_favorite),
+                    tint = Color.White
+                )
             }
         }
     ) { padding ->
@@ -85,9 +89,18 @@ fun FavoriteScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                   // .padding(padding)
+                        ,
                 contentAlignment = Alignment.Center
             ) {
+
+                Image(
+                    painter = painterResource(id = R.drawable.bg),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -108,17 +121,29 @@ fun FavoriteScreen(
                 }
             }
         } else {
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
+                    //.padding(16.dp)
             ) {
-                items(favorites) { favorite ->
-                    FavoriteLocationCard(
-                        favorite = favorite,
-                        onClick = { navController.navigate("favoriteDetails/${favorite.id}") },
-                        onDelete = { viewModel.deleteFavorite(it) }
-                    )
+                Image(
+                    painter = painterResource(id = R.drawable.bg),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    items(favorites) { favorite ->
+                        FavoriteLocationCard(
+                            favorite = favorite,
+                            onClick = { navController.navigate("favoriteDetails/${favorite.id}") },
+                            onDelete = { viewModel.deleteFavorite(it) }
+                        )
+                    }
                 }
             }
         }
