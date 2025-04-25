@@ -1,5 +1,9 @@
 ## Weather Forecast Application
 
+
+https://github.com/user-attachments/assets/cdb4e894-17a5-4bcd-8cfe-8caa32e87e22
+
+
 An Android mobile application that displays the weather status and temperature based on your current location. You can also select a specific location on the map, then add it to a list of favorite locations to view detailed weather information.  
 Additionally, the app allows users to set alerts for different weather conditions such as rain, wind, very low or high temperatures, fog, snow, and more.
 
